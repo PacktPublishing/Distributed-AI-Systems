@@ -1,0 +1,247 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: engine-comparison-gateway-code
+  namespace: default
+data:
+  api-gateway.py: |
+    """
+    Engine Comparison API Gateway - Routes requests to vLLM or SGLang based on inference_server field
+    """
+    from fastapi import FastAPI, Request, HTTPException
+    from fastapi.responses import StreamingResponse, JSONResponse
+    from fastapi.middleware.cors import CORSMiddleware
+    from pydantic import BaseModel
+    import httpx
+    import json
+    import logging
+    from typing import Dict, Any, Optional
+
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    app = FastAPI(title="Engine Comparison API Gateway")
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    # Routing configuration: (model, inference_server) -> service_name
+    ROUTING_CONFIG: Dict[tuple, str] = {
+        ("Qwen/Qwen2.5-0.5B-Instruct", "vllm"): "vllm-qwen2-5-0-5b",
+        ("Qwen/Qwen2.5-0.5B-Instruct", "sglang"): "sglang-qwen2-5-0-5b",
+        ("Qwen/Qwen2.5-0.5B-Instruct", None): "vllm-qwen2-5-0-5b",  # Default to vLLM
+    }
+
+    SERVICE_PORT = 8000
+    NAMESPACE = "default"
+
+    def get_service_for_request(model: str, inference_server: Optional[str] = None) -> Optional[str]:
+        """Get service name based on model and inference_server"""
+        # Try exact match
+        key = (model, inference_server)
+        if key in ROUTING_CONFIG:
+            return ROUTING_CONFIG[key]
+        
+        # Try with None (default)
+        key = (model, None)
+        if key in ROUTING_CONFIG:
+            return ROUTING_CONFIG[key]
+        
+        return None
+
+    @app.get("/health")
+    async def health():
+        return {"status": "healthy"}
+
+    @app.get("/v1/models")
+    async def list_models(request: Request):
+        """List available models - returns models from both services"""
+        models = []
+        
+        # Query vLLM
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                vllm_url = f"http://vllm-qwen2-5-0-5b.{NAMESPACE}.svc.cluster.local:{SERVICE_PORT}/v1/models"
+                response = await client.get(vllm_url)
+                if response.status_code == 200:
+                    vllm_data = response.json()
+                    if "data" in vllm_data:
+                        for model in vllm_data["data"]:
+                            model["owned_by"] = "vllm"
+                            models.append(model)
+        except Exception as e:
+            logger.warning(f"Failed to query vLLM: {e}")
+        
+        # Query SGLang
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                sglang_url = f"http://sglang-qwen2-5-0-5b.{NAMESPACE}.svc.cluster.local:{SERVICE_PORT}/v1/models"
+                response = await client.get(sglang_url)
+                if response.status_code == 200:
+                    sglang_data = response.json()
+                    if "data" in sglang_data:
+                        for model in sglang_data["data"]:
+                            model["owned_by"] = "sglang"
+                            models.append(model)
+        except Exception as e:
+            logger.warning(f"Failed to query SGLang: {e}")
+        
+        return {"data": models}
+
+    @app.post("/v1/chat/completions")
+    async def chat_completions(request: Request):
+        """Route chat completion requests to appropriate service"""
+        body = await request.json()
+        model = body.get("model", "")
+        inference_server = body.get("inference_server") or body.get("engine")
+        
+        # Also check header
+        if not inference_server:
+            inference_server = request.headers.get("X-Inference-Server") or request.headers.get("x-inference-server")
+        
+        service_name = get_service_for_request(model, inference_server)
+        
+        if not service_name:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No service found for model '{model}' with inference_server '{inference_server}'"
+            )
+        
+        # Forward request to the selected service
+        target_url = f"http://{service_name}.{NAMESPACE}.svc.cluster.local:{SERVICE_PORT}/v1/chat/completions"
+        
+        logger.info(f"Routing request for model '{model}' (inference_server: {inference_server}) to {service_name}")
+        
+        async with httpx.AsyncClient(timeout=300.0) as client:
+            response = await client.post(
+                target_url,
+                json=body,
+                headers={k: v for k, v in request.headers.items() if k.lower() not in ['host', 'content-length']}
+            )
+            
+            if response.headers.get("content-type", "").startswith("text/event-stream"):
+                # Streaming response
+                return StreamingResponse(
+                    response.iter_bytes(),
+                    media_type="text/event-stream"
+                )
+            else:
+                return JSONResponse(
+                    content=response.json(),
+                    status_code=response.status_code
+                )
+
+    @app.post("/v1/completions")
+    async def completions(request: Request):
+        """Route completion requests to appropriate service"""
+        body = await request.json()
+        model = body.get("model", "")
+        inference_server = body.get("inference_server") or body.get("engine")
+        
+        if not inference_server:
+            inference_server = request.headers.get("X-Inference-Server") or request.headers.get("x-inference-server")
+        
+        service_name = get_service_for_request(model, inference_server)
+        
+        if not service_name:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No service found for model '{model}' with inference_server '{inference_server}'"
+            )
+        
+        target_url = f"http://{service_name}.{NAMESPACE}.svc.cluster.local:{SERVICE_PORT}/v1/completions"
+        
+        logger.info(f"Routing completion request for model '{model}' (inference_server: {inference_server}) to {service_name}")
+        
+        async with httpx.AsyncClient(timeout=300.0) as client:
+            response = await client.post(
+                target_url,
+                json=body,
+                headers={k: v for k, v in request.headers.items() if k.lower() not in ['host', 'content-length']}
+            )
+            
+            if response.headers.get("content-type", "").startswith("text/event-stream"):
+                return StreamingResponse(
+                    response.iter_bytes(),
+                    media_type="text/event-stream"
+                )
+            else:
+                return JSONResponse(
+                    content=response.json(),
+                    status_code=response.status_code
+                )
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: engine-comparison-gateway
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: engine-comparison-gateway
+  template:
+    metadata:
+      labels:
+        app: engine-comparison-gateway
+    spec:
+      containers:
+      - name: gateway
+        image: python:3.11-slim
+        command:
+        - /bin/bash
+        - -c
+        - |
+          pip install fastapi uvicorn httpx -q
+          python /app/api-gateway.py
+        ports:
+        - containerPort: 8000
+          name: http
+        volumeMounts:
+        - name: gateway-code
+          mountPath: /app
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30  # Wait 30 seconds for gateway startup
+          periodSeconds: 120  # Check every 120 seconds (2 minutes)
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10  # Wait 10 seconds for gateway startup
+          periodSeconds: 60  # Check every 60 seconds (1 minute)
+      volumes:
+      - name: gateway-code
+        configMap:
+          name: engine-comparison-gateway-code
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: engine-comparison-gateway
+  namespace: default
+spec:
+  selector:
+    app: engine-comparison-gateway
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+  type: ClusterIP

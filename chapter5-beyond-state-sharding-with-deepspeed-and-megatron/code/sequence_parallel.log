@@ -1,0 +1,35 @@
+$ python code/sp_demo.py --mode memory
+============================================================
+Activation Memory Scaling with Sequence Length
+============================================================
+
+Model config: hidden_dim=4096, layers=32, batch=1, FP16
+------------------------------------------------------------
+  Seq Length |    Per Layer |  Total (32L) | Note
+------------------------------------------------------------
+       2,048 |       0.02GB |        0.5GB | 
+       4,096 |       0.03GB |        1.0GB | 
+       8,192 |       0.06GB |        2.0GB | 
+      16,384 |       0.12GB |        4.0GB | 
+      32,768 |       0.25GB |        8.0GB | 
+      65,536 |       0.50GB |       16.0GB | 
+     131,072 |       1.00GB |       32.0GB | 
+------------------------------------------------------------
+
+Conclusion: Long sequences require sequence/context parallelism
+to distribute activation memory across multiple GPUs.
+
+
+$ torchrun --nproc_per_node=2 code/sp_demo.py --mode sequence_parallel
+============================================================
+Sequence Parallelism Demo
+============================================================
+
+World size: 2
+
+Full sequence: (2, 8192, 1024)
+Local chunk per GPU: (2, 4096, 1024)
+Memory per GPU: 16.0 MB
+Memory savings: 2x reduction vs full sequence
+LayerNorm applied locally - no cross-GPU communication!
+Each GPU processes its sequence chunk independently.

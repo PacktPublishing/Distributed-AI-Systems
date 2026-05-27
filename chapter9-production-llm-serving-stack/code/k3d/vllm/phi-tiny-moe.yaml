@@ -1,0 +1,121 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-phi-tiny-moe-pod
+  labels:
+    app: vllm
+    model: phi-tiny-moe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vllm
+      model: phi-tiny-moe
+  template:
+    metadata:
+      labels:
+        app: vllm
+        model: phi-tiny-moe
+    spec:
+      terminationGracePeriodSeconds: 60  # Allow 60 seconds for graceful shutdown (LLM services need time to release GPU memory)
+      runtimeClassName: nvidia
+      containers:
+      - name: vllm-server
+        image: vllm/vllm-openai:v0.12.0
+        command:
+        - python3
+        - -m
+        - vllm.entrypoints.openai.api_server
+        args:
+        - --model
+        - microsoft/Phi-tiny-MoE-instruct
+        - --host
+        - "0.0.0.0"
+        - --port
+        - "8000"
+        - --tensor-parallel-size
+        - "1"
+        - --gpu-memory-utilization
+        - "0.2"  # Use 20% of GPU memory (reduced from 0.9 to allow multiple models)
+        - --trust-remote-code
+        env:
+        - name: HF_HOME
+          value: "/models/hub"
+        - name: TRANSFORMERS_CACHE
+          value: "/models/hub"
+        - name: HF_HUB_CACHE
+          value: "/models/hub"
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-token-secret
+              key: token
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+            memory: 32Gi
+          requests:
+            nvidia.com/gpu: 1
+            memory: 16Gi
+        ports:
+        - containerPort: 8000
+          name: http
+        volumeMounts:
+        - name: models
+          mountPath: /models
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 180  # 3 min: model load (longer for first-time download)
+          periodSeconds: 120
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 90  # vLLM typically ready in ~1 min; 90s for first-time download
+          periodSeconds: 60
+          timeoutSeconds: 3
+      volumes:
+      - name: models
+        hostPath:
+          path: /models  # Path in k3d node; use MODEL_PATH when creating cluster, or DirectoryOrCreate for vLLM to download
+          type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-phi-tiny-moe-service
+  labels:
+    app: vllm
+    model: phi-tiny-moe
+spec:
+  type: ClusterIP
+  selector:
+    app: vllm
+    model: phi-tiny-moe
+  ports:
+  - port: 8000
+    targetPort: 8000
+    name: http
+# NodePort service removed - use API Gateway for external access instead
+# If you need direct external access, uncomment and deploy this service:
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: vllm-phi-tiny-moe-nodeport
+#   labels:
+#     app: vllm
+#     model: phi-tiny-moe
+# spec:
+#   type: NodePort
+#   selector:
+#     app: vllm
+#     model: phi-tiny-moe
+#   ports:
+#   - port: 8000
+#     targetPort: 8000
+#     nodePort: 30081
+#     name: http

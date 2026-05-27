@@ -1,0 +1,220 @@
+time torchrun --nnodes 1 --nproc_per_node 2  T5_training_FSDP1.py
+Loading training dataset...
+Training dataset size: 1500
+Loading validation dataset...
+Validation dataset size: 300
+bFloat16 enabled for mixed precision - using bfSixteen policy
+--> current date and time of run = 2025-12-27-10:10:17_PM
+r0 Training Epoch: 100%|| 188/188 [00:14<00:00, 12.85it/s]
+Train Epoch:    1, Loss:        0.4917
+Validation Epoch: 100%|█| 38/38 [00:01<00:00, 32.09it/s]
+Validation Loss: 0.3431
+--> epoch 1 completed...entering save and stats zone
+-->>>> New Val Loss Record: 0.3431268036365509
+r0 Training Epoch: 100%|| 188/188 [00:13<00:00, 13.51it/s]
+Train Epoch:    2, Loss:        0.3409
+Validation Epoch: 100%|█| 38/38 [00:01<00:00, 32.51it/s]
+Validation Loss: 0.3435
+--> epoch 2 completed...entering save and stats zone
+r0 Training Epoch: 100%|| 188/188 [00:14<00:00, 13.28it/s]
+Train Epoch:    3, Loss:        0.3017
+Validation Epoch: 100%|█| 38/38 [00:01<00:00, 32.45it/s]
+Validation Loss: 0.3482
+--> epoch 3 completed...entering save and stats zone
+r0 Training Epoch: 100%|| 188/188 [00:13<00:00, 13.54it/s]
+Train Epoch:    4, Loss:        0.2736
+Validation Epoch: 100%|█| 38/38 [00:01<00:00, 32.45it/s]
+Validation Loss: 0.3565
+--> epoch 4 completed...entering save and stats zone
+
+real    1m23.415s
+user    2m48.371s
+sys     0m12.902s
+(research) [2411][moirai-h200][12][-bash](22:11:20)[0](wukong) : ~/workspace/coderepo/04/code/FSDP
+ 😀 $time python T5_training_Single.py 
+Using device: cuda
+Loading training dataset...
+Training dataset size: 1500
+Loading validation dataset...
+Validation dataset size: 300
+--> current date and time of run = 2025-12-27-10:12:00_PM
+Training Epoch 1: 100%|█| 375/375 [00:15<00:00, 23.46it/s]
+Train Epoch: 1, Loss: 0.4517
+Validation: 100%|█| 75/75 [00:01<00:00, 68.03it/s]
+Validation Loss: 0.3525
+--> Epoch 1 completed in 17.09 seconds
+-->>>> New Best Val Loss Record: 0.3525
+Training Epoch 2: 100%|█| 375/375 [00:15<00:00, 24.05it/s]
+Train Epoch: 2, Loss: 0.3369
+Validation: 100%|█| 75/75 [00:01<00:00, 67.88it/s]
+Validation Loss: 0.3565
+--> Epoch 2 completed in 16.70 seconds
+Training Epoch 3: 100%|█| 375/375 [00:15<00:00, 24.08it/s]
+Train Epoch: 3, Loss: 0.2902
+Validation: 100%|█| 75/75 [00:01<00:00, 68.71it/s]
+Validation Loss: 0.3656
+--> Epoch 3 completed in 16.67 seconds
+Training Epoch 4: 100%|█| 375/375 [00:15<00:00, 24.07it/s]
+Train Epoch: 4, Loss: 0.2483
+Validation: 100%|█| 75/75 [00:01<00:00, 68.38it/s]
+Validation Loss: 0.3785
+--> Epoch 4 completed in 16.68 seconds
+
+==================================================
+Training Summary
+==================================================
+Total training time: 67.14 seconds (1.12 minutes)
+Average time per epoch: 16.79 seconds
+Final training loss: 0.2483
+Best validation loss: 0.3525
+==================================================
+
+real    1m25.937s
+user    1m35.986s
+sys     0m5.859s
+
+
+ 🐶 $torchrun --nnodes 1 --nproc_per_node 2 T5_training_FSDP1.py --model-name google/flan-t5-xxl
+Loading checkpoint shards: 100%|█| 5/5 [00:00<00:00, 149.63it/s]
+Loading checkpoint shards: 100%|█| 5/5 [00:00<00:00, 150.92it/s]
+Loading training dataset...
+Training dataset size: 1500
+Loading validation dataset...
+Validation dataset size: 300
+bFloat16 enabled for mixed precision - using bfSixteen policy
+--> current date and time of run = 2025-12-28-03:07:28_AM
+r0 Training Epoch: 100%|| 188/188 [01:36<00:00,  1.95it/s]
+Train Epoch:    1, Loss:        1.0808
+Validation Epoch: 100%|█| 38/38 [00:05<00:00,  7.52it/s]
+Validation Loss: 0.7982
+--> epoch 1 completed...entering save and stats zone
+-->>>> New Val Loss Record: 0.7982370257377625
+r0 Training Epoch: 100%|| 188/188 [01:35<00:00,  1.96it/s]
+Train Epoch:    2, Loss:        0.7330
+Validation Epoch: 100%|█| 38/38 [00:05<00:00,  7.51it/s]
+Validation Loss: 0.5678
+--> epoch 2 completed...entering save and stats zone
+-->>>> New Val Loss Record: 0.5677811503410339
+r0 Training Epoch: 100%|| 188/188 [01:35<00:00,  1.96it/s]
+Train Epoch:    3, Loss:        0.4123
+Validation Epoch: 100%|█| 38/38 [00:05<00:00,  7.50it/s]
+Validation Loss: 0.3697
+--> epoch 3 completed...entering save and stats zone
+-->>>> New Val Loss Record: 0.3696674406528473
+r0 Training Epoch:  99%|█▌| 187/188 [01:35<00:00,  1.97it/s]
+======================================================================
+Memory Usage BEFORE Last Iteration (Epoch 4, Iteration 188/188):
+======================================================================
+GPU 0:
+  Allocated: 84.05 GB
+  Reserved:  133.84 GB
+  Max Allocated (peak): 104.79 GB
+======================================================================
+
+r0 Training Epoch: 100%|| 188/188 [01:35<00:00,  1.96it/s]
+Train Epoch:    4, Loss:        0.2328
+Validation Epoch: 100%|█| 38/38 [00:05<00:00,  7.52it/s]
+Validation Loss: 0.3999
+--> epoch 4 completed...entering save and stats zone
+
+======================================================================
+Training-Only Time Summary (excludes setup/data loading)
+======================================================================
+Total training time: 404.40 seconds (6.74 minutes)
+Average time per epoch: 101.10 seconds
+Total epochs: 4
+======================================================================
+
+
+
+ 🐱 $python T5_training_Single.py --model-name google/flan-t5-xxl
+Using device: cuda
+Loading checkpoint shards: 100%|█| 5/5 [00:00<00:00, 146.16it/s]
+Loading training dataset...
+Training dataset size: 1500
+Loading validation dataset...
+Validation dataset size: 300
+bFloat16 enabled for mixed precision - using bfSixteen policy
+--> current date and time of run = 2025-12-28-03:17:03_AM
+Training Epoch 1:   0%|     | 0/375 [00:00<?, ?it/s]
+...
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 64.00 MiB. GPU 0 has a total capacity of 140.06 GiB of which 35.31 MiB is free. Including non-PyTorch memory, this process has 140.02 GiB memory in use. Of the allocated memory 131.80 GiB is allocated by PyTorch, and 7.50 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Training Epoch 1:   0%| 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+In Another machine A100-40G:
+
+
+(calli) [2429][octane-phx-bm-gpu-b4-8-ad3-013][2][-bash](16:36:39)[0](wukong) : ~/workspace/coderepo/04/code/FSDP
+$python T5_training_Single.py
+Using device: cuda
+config.json: 1.40kB [00:00, 10.6MB/s]
+model.safetensors: 100%|| 308M/308M [00:05<00:00, 57.1MB/s]
+generation_config.json: 100%|| 147/147 [00:00<00:00, 1.82MB/s]
+tokenizer_config.json: 2.54kB [00:00, 20.7MB/s]
+spiece.model: 100%|| 792k/792k [00:00<00:00, 6.18MB/s]
+special_tokens_map.json: 2.20kB [00:00, 18.0MB/s]
+tokenizer.json: 2.42MB [00:00, 14.1MB/s]
+Loading training dataset...
+Training dataset size: 1500
+Loading validation dataset...
+Validation dataset size: 300
+bFloat16 enabled for mixed precision - using bfSixteen policy
+--> current date and time of run = 2026-02-24-04:37:41_PM
+Training Epoch 1: 100%|| 375/375 [00:30<00:00, 12.12it/s]
+Train Epoch: 1, Loss: 0.4722
+Validation: 100%|| 75/75 [00:01<00:00, 39.65it/s]
+Validation Loss: 0.3566
+--> Epoch 1 completed in 32.84 seconds
+-->>>> New Best Val Loss Record: 0.3566
+Training Epoch 2: 100%|| 375/375 [00:29<00:00, 12.89it/s]
+Train Epoch: 2, Loss: 0.3418
+Validation: 100%|| 75/75 [00:01<00:00, 40.14it/s]
+Validation Loss: 0.3549
+--> Epoch 2 completed in 30.96 seconds
+-->>>> New Best Val Loss Record: 0.3549
+Training Epoch 3: 100%|| 375/375 [00:28<00:00, 12.98it/s]
+Train Epoch: 3, Loss: 0.2943
+Validation: 100%|| 75/75 [00:01<00:00, 39.64it/s]
+Validation Loss: 0.3603
+--> Epoch 3 completed in 30.79 seconds
+Training Epoch 4:  99%|▋  | 373/375 [00:29<00:00, 12.72it/s]
+======================================================================
+Memory Usage BEFORE Last Iteration (Epoch 4, Iteration 375/375):
+======================================================================
+GPU 0:
+  Allocated: 1.24 GB
+  Reserved:  2.96 GB
+  Max Allocated (peak): 2.64 GB
+======================================================================
+
+Training Epoch 4: 100%|| 375/375 [00:29<00:00, 12.58it/s]
+Train Epoch: 4, Loss: 0.2675
+Validation: 100%|| 75/75 [00:01<00:00, 39.35it/s]
+Validation Loss: 0.3850
+--> Epoch 4 completed in 31.73 seconds
+
+==================================================
+Training Summary
+==================================================
+Total time (including setup): 126.32 seconds (2.11 minutes)
+Training-only time (excludes setup/data loading): 126.32 seconds (2.11 minutes)
+Average time per epoch: 31.58 seconds
+Total epochs: 4
+Final training loss: 0.2675
+Best validation loss: 0.3549
+==================================================

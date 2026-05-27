@@ -1,0 +1,39 @@
+$ torchrun --nproc_per_node=2 code/ulysses_demo.py
+=================================================================
+DeepSpeed-Ulysses Sequence Parallelism Demo
+=================================================================
+
+World size: 2 GPUs
+
+Configuration:
+  Full sequence length: 8192
+  Local sequence per GPU: 4096
+  Total attention heads: 8
+  Local heads per GPU (after transpose): 4
+  Head dimension: 64
+
+-----------------------------------------------------------------
+Initial layout (sequence-parallel):
+  Q, K, V shape per GPU: (2, 4096, 8, 64)
+  Each GPU holds: 4096 tokens, all 8 heads
+
+-----------------------------------------------------------------
+After all-to-all (head-parallel):
+  Q shape per GPU: (2, 8192, 4, 64)
+  Each GPU holds: 8192 tokens, only 4 heads
+  -> Now standard attention can be computed!
+
+-----------------------------------------------------------------
+After Ulysses attention:
+  Output shape per GPU: (2, 4096, 8, 64)
+  Back to sequence-parallel layout
+
+-----------------------------------------------------------------
+Summary:
+  1. Start: each GPU has 4096 tokens × 8 heads
+  2. All-to-all #1: transpose to 8192 tokens × 4 heads
+  3. Attention: standard self-attention on local heads (no partial softmax!)
+  4. All-to-all #2: transpose back to 4096 tokens × 8 heads
+
+Key advantage: No complex partial softmax accumulation like ring attention
+=================================================================

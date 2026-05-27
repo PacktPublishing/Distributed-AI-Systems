@@ -1,0 +1,109 @@
+ 
+
+🐶 $torchrun --nnodes 1 --nproc_per_node 2 T5_training_FSDP1.py --model-name google/flan-t5-xxl                                                         
+Loading checkpoint shards: 100%|█| 5/5 [00:00<00:00, 149.63it/s]
+Loading checkpoint shards: 100%|█| 5/5 [00:00<00:00, 150.92it/s]
+Loading training dataset...                                                 
+Training dataset size: 1500                                                 
+Loading validation dataset...                                                                                                                           
+Validation dataset size: 300                                                                                                                            
+bFloat16 enabled for mixed precision - using bfSixteen policy                                                                                           
+--> current date and time of run = 2025-12-28-03:07:28_AM                                                                                               
+r0 Training Epoch: 100%|| 188/188 [01:36<00:00,  1.95it/s]
+Train Epoch:    1, Loss:        1.0808                                                                                                                  
+Validation Epoch: 100%|█| 38/38 [00:05<00:00,  7.52it/s]
+Validation Loss: 0.7982                                                                                                                                 
+--> epoch 1 completed...entering save and stats zone                                                                                                    
+-->>>> New Val Loss Record: 0.7982370257377625                                                                                                          
+r0 Training Epoch: 100%|| 188/188 [01:35<00:00,  1.96it/s]
+Train Epoch:    2, Loss:        0.7330                                                                                                                  
+Validation Epoch: 100%|█| 38/38 [00:05<00:00,  7.51it/s]
+Validation Loss: 0.5678                                                                                                                                 
+--> epoch 2 completed...entering save and stats zone                                                                                                    
+-->>>> New Val Loss Record: 0.5677811503410339                                                                                                          
+r0 Training Epoch: 100%|| 188/188 [01:35<00:00,  1.96it/s]
+Train Epoch:    3, Loss:        0.4123                                                                                                                  
+Validation Epoch: 100%|█| 38/38 [00:05<00:00,  7.50it/s]
+Validation Loss: 0.3697                                                                                                                                 
+--> epoch 3 completed...entering save and stats zone                                                                                                    
+-->>>> New Val Loss Record: 0.3696674406528473                                                                                                          
+r0 Training Epoch:  99%|█▌| 187/188 [01:35<00:00,  1.97it/s]
+======================================================================                                                                                  
+Memory Usage BEFORE Last Iteration (Epoch 4, Iteration 188/188):                                                                                        
+======================================================================                                                                                  
+GPU 0:
+  Allocated: 84.05 GB
+  Reserved:  133.84 GB
+  Max Allocated (peak): 104.79 GB
+======================================================================
+
+r0 Training Epoch: 100%|| 188/188 [01:35<00:00,  1.96it/s]
+Train Epoch:    4, Loss:        0.2328
+Validation Epoch: 100%|█| 38/38 [00:05<00:00,  7.52it/s]
+Validation Loss: 0.3999
+--> epoch 4 completed...entering save and stats zone
+
+======================================================================
+Training-Only Time Summary (excludes setup/data loading)
+======================================================================
+Total training time: 404.40 seconds (6.74 minutes)
+Average time per epoch: 101.10 seconds 
+Total epochs: 4
+======================================================================
+
+
+
+
+
+ 🐶 $torchrun --nnodes 1 --nproc_per_node 2 T5_training_FSDP2.py --model-name google/flan-t5-xxl
+Loading training dataset...
+Training dataset size: 1500
+Loading validation dataset...
+Validation dataset size: 300
+bFloat16 enabled for mixed precision - using MixedPrecisionPolicy
+Loading model google/flan-t5-xxl...
+Loading checkpoint shards: 100%|█| 5/5 [00:00<00:00, 139.58it/s]
+Loading checkpoint shards: 100%|█| 5/5 [00:00<00:00, 142.58it/s]
+Model sharded with FSDP2
+--> current date and time of run = 2025-12-28-04:43:20_AM
+r0 Training Epoch: 100%|| 188/188 [01:41<00:00,  1.85it/s]
+Train Epoch:    1, Loss:        1.0661
+Validation Epoch: 100%|█| 38/38 [00:05<00:00,  6.83it/s]
+Validation Loss: 0.7572
+--> epoch 1 completed...entering save and stats zone
+-->>>> New Val Loss Record: 0.7572471499443054
+r0 Training Epoch: 100%|| 188/188 [01:40<00:00,  1.87it/s]
+Train Epoch:    2, Loss:        0.7435
+Validation Epoch: 100%|█| 38/38 [00:05<00:00,  6.83it/s]
+Validation Loss: 0.6429
+--> epoch 2 completed...entering save and stats zone
+-->>>> New Val Loss Record: 0.6428608298301697
+r0 Training Epoch: 100%|| 188/188 [01:40<00:00,  1.87it/s]
+Train Epoch:    3, Loss:        0.4724
+Validation Epoch: 100%|█| 38/38 [00:05<00:00,  6.83it/s]
+Validation Loss: 0.3794
+--> epoch 3 completed...entering save and stats zone
+-->>>> New Val Loss Record: 0.3794073760509491
+r0 Training Epoch:  99%|█▌| 187/188 [01:39<00:00,  1.87it/s]
+======================================================================
+Memory Usage BEFORE Last Iteration (Epoch 4, Iteration 188/188):
+======================================================================
+GPU 0:
+  Allocated: 84.05 GB
+  Reserved:  123.11 GB
+  Max Allocated (peak): 104.80 GB
+======================================================================
+
+r0 Training Epoch: 100%|| 188/188 [01:40<00:00,  1.87it/s]
+Train Epoch:    4, Loss:        0.2839
+Validation Epoch: 100%|█| 38/38 [00:05<00:00,  6.83it/s]
+Validation Loss: 0.3891
+--> epoch 4 completed...entering save and stats zone
+
+======================================================================
+Training-Only Time Summary (excludes setup/data loading)
+======================================================================
+Total training time: 425.74 seconds (7.10 minutes)
+Average time per epoch: 106.44 seconds
+Total epochs: 4
+======================================================================

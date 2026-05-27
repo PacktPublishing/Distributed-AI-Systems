@@ -1,0 +1,109 @@
+# vLLM Serving for Llama-3.2-1B-Instruct
+# meta-llama/Llama-3.2-1B-Instruct is a gated repo; HF_TOKEN required
+#
+# Create secret: kubectl create secret generic hf-token-secret --from-literal=token="$HF_TOKEN"
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-llama-32-1b-pod
+  labels:
+    app: vllm
+    model: llama-32-1b
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vllm
+      model: llama-32-1b
+  template:
+    metadata:
+      labels:
+        app: vllm
+        model: llama-32-1b
+    spec:
+      terminationGracePeriodSeconds: 60  # Allow 60 seconds for graceful shutdown (LLM services need time to release GPU memory)
+      runtimeClassName: nvidia
+      containers:
+      - name: vllm-server
+        image: vllm/vllm-openai:v0.12.0
+        command:
+        - python3
+        - -m
+        - vllm.entrypoints.openai.api_server
+        args:
+        - --model
+        - meta-llama/Llama-3.2-1B-Instruct
+        - --host
+        - "0.0.0.0"
+        - --port
+        - "8000"
+        - --tensor-parallel-size
+        - "1"
+        - --gpu-memory-utilization
+        - "0.2"  # Use 20% of GPU memory (reduced from 0.9 to allow multiple models)
+        - --trust-remote-code
+        env:
+        - name: HF_HOME
+          value: "/models/hub"
+        - name: TRANSFORMERS_CACHE
+          value: "/models/hub"
+        - name: HF_HUB_CACHE
+          value: "/models/hub"
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-token-secret
+              key: token
+        ports:
+        - containerPort: 8000
+          name: http
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+            memory: 8Gi
+          requests:
+            nvidia.com/gpu: 1
+            memory: 6Gi
+        volumeMounts:
+        - name: models
+          mountPath: /models
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 180  # Wait 3 minutes for model loading
+          periodSeconds: 120  # Check every 120 seconds (2 minutes)
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 120  # Wait 2 minutes for model loading
+          periodSeconds: 60  # Check every 60 seconds (1 minute)
+          timeoutSeconds: 3
+      volumes:
+      - name: models
+        hostPath:
+          path: /models  # Path in k3d node; use MODEL_PATH when creating cluster, or DirectoryOrCreate for vLLM to download
+          type: DirectoryOrCreate
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-llama-32-1b-service
+  labels:
+    app: vllm
+    model: llama-32-1b
+spec:
+  type: ClusterIP
+  selector:
+    app: vllm
+    model: llama-32-1b
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http

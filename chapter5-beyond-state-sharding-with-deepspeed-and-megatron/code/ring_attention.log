@@ -1,0 +1,26 @@
+$ torchrun --nproc_per_node=2 code/sp_demo.py --mode ring_attention
+============================================================
+Ring Attention Demo (Context Parallelism)
+============================================================
+
+World size: 2
+
+Each GPU holds:
+  Q: (1, 8, 4096, 64)
+  K: (1, 8, 4096, 64)
+  V: (1, 8, 4096, 64)
+
+Total sequence length: 8192
+
+------------------------------------------------------------
+Ring Attention Steps:
+------------------------------------------------------------
+  Step 0: GPU 0 attends to KV from GPU 0
+  Step 1: GPU 0 attends to KV from GPU 1
+------------------------------------------------------------
+
+After 2 steps:
+  - Every Q has attended to all 8192 tokens
+  - No GPU ever held the full 8192-token KV
+  - Memory per GPU: 2x reduction vs full attention
+

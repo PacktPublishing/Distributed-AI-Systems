@@ -1,0 +1,46 @@
+# API Gateway Routing Configuration
+# This file defines how requests are routed to different inference services
+# Format: model_name -> inference_server -> service_name
+# Service names can include namespace: <service-name>.<namespace>.svc.cluster.local
+# Or just <service-name> if accessing services in the same namespace
+
+routing:
+  # vLLM services (multi-engines namespace)
+  - model: "meta-llama/Llama-3.2-1B-Instruct"
+    inference_server: "vllm"
+    service_name: "vllm-llama-32-1b-service.multi-engines.svc.cluster.local"
+  
+  - model: "meta-llama/Llama-3.2-1B-Instruct"
+    inference_server: null  # Default to vLLM if not specified
+    service_name: "vllm-llama-32-1b-service.multi-engines.svc.cluster.local"
+  
+  # Phi-tiny-MoE (vLLM) - multi-models namespace
+  - model: "/models/Phi-tiny-MoE-instruct"
+    inference_server: "vllm"
+    service_name: "vllm-phi-tiny-moe-service.multi-models.svc.cluster.local"
+  
+  - model: "/models/Phi-tiny-MoE-instruct"
+    inference_server: null  # Default to vLLM if not specified
+    service_name: "vllm-phi-tiny-moe-service.multi-models.svc.cluster.local"
+  
+  - model: "Phi-tiny-MoE-instruct"  # Also support without /models/ prefix
+    inference_server: "vllm"
+    service_name: "vllm-phi-tiny-moe-service.multi-models.svc.cluster.local"
+  
+  - model: "Phi-tiny-MoE-instruct"
+    inference_server: null
+    service_name: "vllm-phi-tiny-moe-service.multi-models.svc.cluster.local"
+  
+  # SGLang services (multi-engines namespace)
+  - model: "meta-llama/Llama-3.2-1B-Instruct"
+    inference_server: "sglang"
+    service_name: "sglang-llama-32-1b-service.multi-engines.svc.cluster.local"
+  
+  # TensorRT-LLM services (multi-engines namespace)
+  - model: "meta-llama/Llama-3.2-1B-Instruct"
+    inference_server: "tensorrt"
+    service_name: "tensorrt-llama-32-1b-service.multi-engines.svc.cluster.local"
+  
+  - model: "meta-llama/Llama-3.2-1B-Instruct"
+    inference_server: "trtllm"  # Alternative name for TensorRT-LLM
+    service_name: "tensorrt-llama-32-1b-service.multi-engines.svc.cluster.local"

@@ -1,0 +1,188 @@
+$ kubectl describe node
+Name:               k3d-mycluster-gpu-agent-0
+Roles:              <none>
+Labels:             beta.kubernetes.io/arch=amd64
+                    beta.kubernetes.io/instance-type=k3s
+                    beta.kubernetes.io/os=linux
+                    kubernetes.io/arch=amd64
+                    kubernetes.io/hostname=k3d-mycluster-gpu-agent-0
+                    kubernetes.io/os=linux
+                    node.kubernetes.io/instance-type=k3s
+Annotations:        alpha.kubernetes.io/provided-node-ip: 172.20.0.3
+                    flannel.alpha.coreos.com/backend-data: {"VNI":1,"VtepMAC":"16:53:b2:92:6b:cd"}
+                    flannel.alpha.coreos.com/backend-type: vxlan
+                    flannel.alpha.coreos.com/kube-subnet-manager: true
+                    flannel.alpha.coreos.com/public-ip: 172.20.0.3
+                    k3s.io/hostname: k3d-mycluster-gpu-agent-0
+                    k3s.io/internal-ip: 172.20.0.3
+                    k3s.io/node-args: ["agent"]
+                    k3s.io/node-config-hash: K4FS4WGHLNPHPALZ3XAXCFQK4OMI75HIF67QVNFQ4V4BXTYOUYOQ====
+                    k3s.io/node-env:
+                      {"K3S_KUBECONFIG_OUTPUT":"/output/kubeconfig.yaml","K3S_TOKEN":"********","K3S_URL":"https://k3d-mycluster-gpu-server-0:6443"}
+                    node.alpha.kubernetes.io/ttl: 0
+                    volumes.kubernetes.io/controller-managed-attach-detach: true
+CreationTimestamp:  Sun, 01 Mar 2026 02:03:30 +0000
+Taints:             <none>
+Unschedulable:      false
+Lease:
+  HolderIdentity:  k3d-mycluster-gpu-agent-0
+  AcquireTime:     <unset>
+  RenewTime:       Sun, 01 Mar 2026 02:09:26 +0000
+Conditions:
+  Type             Status  LastHeartbeatTime                 LastTransitionTime                Reason                       Message
+  ----             ------  -----------------                 ------------------                ------                       -------
+  MemoryPressure   False   Sun, 01 Mar 2026 02:07:45 +0000   Sun, 01 Mar 2026 02:03:30 +0000   KubeletHasSufficientMemory   kubelet has sufficient memory available
+  DiskPressure     False   Sun, 01 Mar 2026 02:07:45 +0000   Sun, 01 Mar 2026 02:03:30 +0000   KubeletHasNoDiskPressure     kubelet has no disk pressure
+  PIDPressure      False   Sun, 01 Mar 2026 02:07:45 +0000   Sun, 01 Mar 2026 02:03:30 +0000   KubeletHasSufficientPID      kubelet has sufficient PID available
+  Ready            True    Sun, 01 Mar 2026 02:07:45 +0000   Sun, 01 Mar 2026 02:03:30 +0000   KubeletReady                 kubelet is posting ready status
+Addresses:
+  InternalIP:  172.20.0.3
+  Hostname:    k3d-mycluster-gpu-agent-0
+Capacity:
+  cpu:                128
+  ephemeral-storage:  7113584784Ki
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             2113627548Ki
+  nvidia.com/gpu:     8
+  pods:               110
+Allocatable:
+  cpu:                128
+  ephemeral-storage:  6920095272448
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             2113627548Ki
+  nvidia.com/gpu:     8
+  pods:               110
+System Info:
+  Machine ID:                 
+  System UUID:                080020ff-ffff-ffff-ffff-a8698c17c150
+  Boot ID:                    da0ddf86-a8c0-4ee8-b0d2-ef7f7ba120d8
+  Kernel Version:             6.8.0-1040-oracle
+  OS Image:                   Ubuntu 22.04.4 LTS
+  Operating System:           linux
+  Architecture:               amd64
+  Container Runtime Version:  containerd://2.1.5-k3s1
+  Kubelet Version:            v1.35.1+k3s1
+  Kube-Proxy Version:         
+PodCIDR:                      10.42.0.0/24
+PodCIDRs:                     10.42.0.0/24
+ProviderID:                   k3s://k3d-mycluster-gpu-agent-0
+Non-terminated Pods:          (2 in total)
+  Namespace                   Name                                    CPU Requests  CPU Limits  Memory Requests  Memory Limits  Age
+  ---------                   ----                                    ------------  ----------  ---------------  -------------  ---
+  kube-system                 nvidia-device-plugin-daemonset-4wmp5    0 (0%)        0 (0%)      0 (0%)           0 (0%)         6m3s
+  kube-system                 svclb-traefik-b31019d8-6zfct            0 (0%)        0 (0%)      0 (0%)           0 (0%)         5m41s
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests  Limits
+  --------           --------  ------
+  cpu                0 (0%)    0 (0%)
+  memory             0 (0%)    0 (0%)
+  ephemeral-storage  0 (0%)    0 (0%)
+  hugepages-1Gi      0 (0%)    0 (0%)
+  hugepages-2Mi      0 (0%)    0 (0%)
+  nvidia.com/gpu     0         0
+Events:
+  Type    Reason                   Age                  From                   Message
+  ----    ------                   ----                 ----                   -------
+  Normal  CertificateExpirationOK  6m6s                 k3s-cert-monitor       Node and Certificate Authority certificates managed by k3s are OK
+  Normal  Synced                   6m4s (x2 over 6m4s)  cloud-node-controller  Node synced successfully
+  Normal  RegisteredNode           6m4s                 node-controller        Node k3d-mycluster-gpu-agent-0 event: Registered Node k3d-mycluster-gpu-agent-0 in Controller
+
+
+Name:               k3d-mycluster-gpu-server-0
+Roles:              control-plane
+Labels:             beta.kubernetes.io/arch=amd64
+                    beta.kubernetes.io/instance-type=k3s
+                    beta.kubernetes.io/os=linux
+                    kubernetes.io/arch=amd64
+                    kubernetes.io/hostname=k3d-mycluster-gpu-server-0
+                    kubernetes.io/os=linux
+                    node-role.kubernetes.io/control-plane=true
+                    node.kubernetes.io/instance-type=k3s
+Annotations:        alpha.kubernetes.io/provided-node-ip: 172.20.0.2
+                    flannel.alpha.coreos.com/backend-data: {"VNI":1,"VtepMAC":"a2:62:00:2d:30:40"}
+                    flannel.alpha.coreos.com/backend-type: vxlan
+                    flannel.alpha.coreos.com/kube-subnet-manager: true
+                    flannel.alpha.coreos.com/public-ip: 172.20.0.2
+                    k3s.io/hostname: k3d-mycluster-gpu-server-0
+                    k3s.io/internal-ip: 172.20.0.2
+                    k3s.io/node-args: ["server","--tls-san","0.0.0.0","--tls-san","k3d-mycluster-gpu-serverlb"]
+                    k3s.io/node-config-hash: HDSHYAXEURY5BID3PMJIQO2RURJFALA7SBQYU3LPJ6VPJN6AAGBA====
+                    k3s.io/node-env: {"K3S_KUBECONFIG_OUTPUT":"/output/kubeconfig.yaml","K3S_TOKEN":"********"}
+                    node.alpha.kubernetes.io/ttl: 0
+                    volumes.kubernetes.io/controller-managed-attach-detach: true
+CreationTimestamp:  Sun, 01 Mar 2026 02:03:25 +0000
+Taints:             <none>
+Unschedulable:      false
+Lease:
+  HolderIdentity:  k3d-mycluster-gpu-server-0
+  AcquireTime:     <unset>
+  RenewTime:       Sun, 01 Mar 2026 02:09:33 +0000
+Conditions:
+  Type             Status  LastHeartbeatTime                 LastTransitionTime                Reason                       Message
+  ----             ------  -----------------                 ------------------                ------                       -------
+  MemoryPressure   False   Sun, 01 Mar 2026 02:08:22 +0000   Sun, 01 Mar 2026 02:03:25 +0000   KubeletHasSufficientMemory   kubelet has sufficient memory available
+  DiskPressure     False   Sun, 01 Mar 2026 02:08:22 +0000   Sun, 01 Mar 2026 02:03:25 +0000   KubeletHasNoDiskPressure     kubelet has no disk pressure
+  PIDPressure      False   Sun, 01 Mar 2026 02:08:22 +0000   Sun, 01 Mar 2026 02:03:25 +0000   KubeletHasSufficientPID      kubelet has sufficient PID available
+  Ready            True    Sun, 01 Mar 2026 02:08:22 +0000   Sun, 01 Mar 2026 02:03:26 +0000   KubeletReady                 kubelet is posting ready status
+Addresses:
+  InternalIP:  172.20.0.2
+  Hostname:    k3d-mycluster-gpu-server-0
+Capacity:
+  cpu:                128
+  ephemeral-storage:  7113584784Ki
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             2113627548Ki
+  nvidia.com/gpu:     8
+  pods:               110
+Allocatable:
+  cpu:                128
+  ephemeral-storage:  6920095272448
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             2113627548Ki
+  nvidia.com/gpu:     8
+  pods:               110
+System Info:
+  Machine ID:                 
+  System UUID:                080020ff-ffff-ffff-ffff-a8698c17c150
+  Boot ID:                    da0ddf86-a8c0-4ee8-b0d2-ef7f7ba120d8
+  Kernel Version:             6.8.0-1040-oracle
+  OS Image:                   Ubuntu 22.04.4 LTS
+  Operating System:           linux
+  Architecture:               amd64
+  Container Runtime Version:  containerd://2.1.5-k3s1
+  Kubelet Version:            v1.35.1+k3s1
+  Kube-Proxy Version:         
+PodCIDR:                      10.42.1.0/24
+PodCIDRs:                     10.42.1.0/24
+ProviderID:                   k3s://k3d-mycluster-gpu-server-0
+Non-terminated Pods:          (6 in total)
+  Namespace                   Name                                       CPU Requests  CPU Limits  Memory Requests  Memory Limits  Age
+  ---------                   ----                                       ------------  ----------  ---------------  -------------  ---
+  kube-system                 coredns-7566b5ff58-bt9c9                   100m (0%)     0 (0%)      70Mi (0%)        170Mi (0%)     6m3s
+  kube-system                 local-path-provisioner-6bc6568469-fw689    0 (0%)        0 (0%)      0 (0%)           0 (0%)         6m3s
+  kube-system                 metrics-server-786d997795-9vcsh            100m (0%)     0 (0%)      70Mi (0%)        0 (0%)         6m3s
+  kube-system                 nvidia-device-plugin-daemonset-xmmcw       0 (0%)        0 (0%)      0 (0%)           0 (0%)         6m3s
+  kube-system                 svclb-traefik-b31019d8-njdh6               0 (0%)        0 (0%)      0 (0%)           0 (0%)         5m41s
+  kube-system                 traefik-5fdc878c8d-lxbbh                   0 (0%)        0 (0%)      0 (0%)           0 (0%)         5m41s
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests    Limits
+  --------           --------    ------
+  cpu                200m (0%)   0 (0%)
+  memory             140Mi (0%)  170Mi (0%)
+  ephemeral-storage  0 (0%)      0 (0%)
+  hugepages-1Gi      0 (0%)      0 (0%)
+  hugepages-2Mi      0 (0%)      0 (0%)
+  nvidia.com/gpu     0           0
+Events:
+  Type    Reason                          Age   From                   Message
+  ----    ------                          ----  ----                   -------
+  Normal  CertificateExpirationOK         6m9s  k3s-cert-monitor       Node and Certificate Authority certificates managed by k3s are OK
+  Normal  Synced                          6m6s  cloud-node-controller  Node synced successfully
+  Normal  RegisteredNode                  6m4s  node-controller        Node k3d-mycluster-gpu-server-0 event: Registered Node k3d-mycluster-gpu-server-0 in Controller
+  Normal  NodePasswordValidationComplete  6m4s  k3s-supervisor         Deferred node password secret validation complete

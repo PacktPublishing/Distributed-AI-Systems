@@ -1,0 +1,42 @@
+$ torchrun --nproc_per_node=2 code/expert_parallel_demo.py
+=================================================================
+Expert Parallelism Demo
+=================================================================
+
+World size: 2 GPUs = 2 experts
+
+Configuration:
+  Tokens per GPU: 16
+  Hidden dim: 256
+  Expert dim: 512
+  Top-k routing: 2
+
+-----------------------------------------------------------------
+Running Expert-Parallel Forward Pass
+-----------------------------------------------------------------
+
+  Router assigned tokens to experts:
+    Expert 0: 12 token-expert pairs
+    Expert 1: 4 token-expert pairs
+
+  Token dispatch (top-1 only for demo):
+    GPU 0 sends: [12, 4]
+    GPU 0 receives: [12, 6]
+
+  After all-to-all dispatch:
+    GPU 0 now has 18 tokens to process with Expert 0
+
+-----------------------------------------------------------------
+Summary
+-----------------------------------------------------------------
+  Input shape per GPU: (16, 256)
+  Output shape per GPU: (16, 256)
+
+  Key steps:
+    1. Router computes expert assignments for each token
+    2. All-to-all dispatches tokens to their assigned experts
+    3. Each GPU processes tokens with its local expert
+    4. All-to-all returns results to original GPUs
+    5. Results weighted by router scores
+=================================================================
+

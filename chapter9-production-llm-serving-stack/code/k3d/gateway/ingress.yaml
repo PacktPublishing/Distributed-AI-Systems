@@ -1,0 +1,62 @@
+# Ingress configuration for vLLM API Gateway
+# This exposes the Gateway to external access via domain name
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vllm-api-gateway-ingress
+  annotations:
+    # Rewrite target (if needed)
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    # SSL redirect (set to true when TLS is configured)
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # Increase timeout for long-running requests
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    # Allow large request bodies (for model requests)
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: localhost
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: vllm-api-gateway
+            port:
+              number: 8000
+
+---
+# Example: Ingress with TLS (Production)
+# Uncomment and configure when you have TLS certificates
+
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: vllm-api-gateway-ingress-tls
+#   annotations:
+#     cert-manager.io/cluster-issuer: "letsencrypt-prod"  # If using cert-manager
+#     nginx.ingress.kubernetes.io/ssl-redirect: "true"
+#     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+#     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+#     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+# spec:
+#   ingressClassName: nginx
+#   tls:
+#   - hosts:
+#     - localhost
+#     secretName: vllm-api-tls
+#   rules:
+#   - host: localhost
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: vllm-api-gateway
+#             port:
+#               number: 8000

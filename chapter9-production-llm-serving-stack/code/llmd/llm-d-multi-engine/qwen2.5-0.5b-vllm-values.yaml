@@ -1,0 +1,59 @@
+multinode: false
+
+modelArtifacts:
+  uri: "hf://Qwen/Qwen2.5-0.5B-Instruct"  # HuggingFace model path
+  name: "Qwen/Qwen2.5-0.5B-Instruct"
+  size: 2Gi
+  authSecretName: ""  # Qwen2.5-0.5B-Instruct is not gated, no token needed
+
+routing:
+  servicePort: 54321
+  proxy:
+    image: ghcr.io/llm-d/llm-d-routing-sidecar:v0.4.0-rc.1
+    connector: nixlv2
+    secure: false
+
+decode:
+  create: true
+  replicas: 1
+  extraConfig:
+    runtimeClassName: nvidia  # Required for k3d GPU access
+    nodeSelector:
+      kubernetes.io/hostname: k3d-llmd-multiengine-agent-0  # Schedule to agent-0
+    securityContext:
+      fsGroup: 0  # Set group to root so pod can write to /models/hub
+  containers:
+  - name: "vllm"
+    image: ghcr.io/llm-d/llm-d-cuda:v0.4.0  # Updated to v0.4.0
+    modelCommand: vllmServe
+    args:
+      - "--disable-uvicorn-access-log"
+      # Note: Qwen2.5-0.5B-Instruct doesn't require --trust-remote-code
+      - "--gpu-memory-utilization"
+      - "0.05"  # Use 5% of GPU memory (target: ~7GB out of 140GB) - reduced due to limited free memory
+      - "--max-model-len"
+      - "32768"  # Set to 32K as model supports 32K
+    env:
+      - name: NVIDIA_VISIBLE_DEVICES
+        value: "0"  # Only expose GPU 0 to container (host GPU 0)
+      - name: CUDA_VISIBLE_DEVICES
+        value: "0"  # Use GPU 0 within container (which maps to host GPU 0)
+      - name: CUDA_DEVICE_ORDER
+        value: "PCI_BUS_ID"  # Ensure consistent GPU ordering
+      - name: HF_HOME
+        value: "/models/hub"  # Now writable after permission fix
+      - name: TRANSFORMERS_CACHE
+        value: "/models/hub"
+      - name: HF_HUB_CACHE
+        value: "/models/hub"
+    resources:
+      limits:
+        nvidia.com/gpu: "1"
+        memory: 8Gi
+      requests:
+        nvidia.com/gpu: "1"
+        memory: 4Gi
+    mountModelVolume: true  # Use default model volume mount for HuggingFace models
+
+prefill:
+  create: false

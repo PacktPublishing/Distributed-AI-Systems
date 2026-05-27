@@ -1,0 +1,16 @@
+torchrun --nproc_per_node=2 code/tensor_parallel_mlp.py
+Input shape: torch.Size([4, 128, 256])
+TP MLP output shape: torch.Size([4, 128, 256])
+World size: 2
+
+Weight shapes per GPU:
+  fc1.weight: torch.Size([512, 256]) (columns split)
+  fc2.weight: torch.Size([256, 512]) (rows split)
+
+Parameter count:
+  Regular MLP (per GPU): 525,568
+  TP MLP (per GPU): 262,912
+  Memory reduction: 50.0%
+
+Tensor parallelism demo complete!
+

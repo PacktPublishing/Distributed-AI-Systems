@@ -1,0 +1,91 @@
+$
+./manage-cluster-multi-models.sh start --with-gateway
+==========================================
+  llm-d Multi-Model Deployment
+==========================================
+Using k3s image: k3s-cuda:1.35.1-cuda-12.4.1
+Using vLLM image: vllm/vllm-openai:v0.14.1
+
+Checking prerequisites...
+All prerequisites met.
+
+Step 1: Setting up k3d cluster
+Found existing k3d cluster(s):
+NAME           SERVERS   AGENTS   LOADBALANCER
+llmd-cluster   1/1       1/1      true
+
+Target cluster 'llmd-cluster' already exists.
+Delete and recreate it? (yes/no) [no]: no
+Using existing cluster: llmd-cluster
+/home/wukong/.kube/config
+Switched to context "k3d-llmd-cluster".
+node/k3d-llmd-cluster-agent-0 condition met
+node/k3d-llmd-cluster-server-0 condition met
+
+Step 2: Installing NVIDIA device plugin
+NVIDIA device plugin already installed.
+
+Step 3: Creating HuggingFace token secret
+HF token secret already exists.
+
+Step 4: Deploying Llama-3.2-1B on vLLM
+Llama pod already exists.
+Waiting for vllm-llama-32-1b to be ready (timeout: 600s)...
+
+Pod vllm-llama-32-1b is ready!
+
+Step 5: Deploying Qwen2.5-0.5B on vLLM
+Qwen pod already exists.
+Waiting for vllm-qwen2-5-0-5b to be ready (timeout: 600s)...
+
+Pod vllm-qwen2-5-0-5b is ready!
+
+Step 6: Deploying Inference Gateway
+Installing Gateway API CRDs...
+Gateway API CRDs already installed.
+Installing Gateway API Inference Extension CRDs...
+Inference Extension CRDs already installed.
+Deploying Inference Gateway...
+deployment.apps/llm-gateway created
+service/llm-gateway created
+Inference Gateway deployed.
+Waiting for gateway to be ready...
+deployment.apps/llm-gateway condition met
+
+==========================================
+  Deployment Summary
+==========================================
+
+NAME                           READY   STATUS    RESTARTS   AGE
+llm-gateway-7c9d887c6f-d2tvq   1/1     Running   0          6s
+vllm-llama-32-1b               1/1     Running   0          14m
+vllm-qwen2-5-0-5b              1/1     Running   0          9m24s
+
+NAME                TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+kubernetes          ClusterIP   10.43.0.1       <none>        443/TCP    14m
+llm-gateway         ClusterIP   10.43.85.232    <none>        8000/TCP   6s
+vllm-llama-32-1b    ClusterIP   10.43.145.217   <none>        8000/TCP   14m
+vllm-qwen2-5-0-5b   ClusterIP   10.43.86.109    <none>        8000/TCP   9m24s
+
+Deployment complete!
+
+Next steps (with Inference Gateway):
+  1. Port forward gateway:  kubectl port-forward svc/llm-gateway 8000:8000
+  2. Test Llama: curl http://localhost:8000/v1/chat/completions -H 'Content-Type: application/json' -d '{"model": "meta-llama/Llama-3.2-1B-Instruct", "messages": [{"role": "user", "content": "Hello!"}]}'
+  3. Test Qwen:  curl http://localhost:8000/v1/chat/completions -H 'Content-Type: application/json' -d '{"model": "Qwen/Qwen2.5-0.5B-Instruct", "messages": [{"role": "user", "content": "Hello!"}]}'
+
+$
+kubectl port-forward svc/llm-gateway 8000:8000&
+[1] 1880826
+$
+Forwarding from 127.0.0.1:8000 -> 8000
+Forwarding from [::1]:8000 -> 8000
+curl http://localhost:8000/v1/chat/completions -H 'Content-Type: application/json' -d '{"model": "meta-llama/Llama-3.2-1B-Instruct", "messages": [{"role": "user", "content": "Hello!"}]}'
+Handling connection for 8000
+{"id":"chatcmpl-ef0362e3-51ee-42bb-bd28-5dc5789f68d1","object":"chat.completion","created":1772388571,"model":"meta-llama/Llama-3.2-1B-Instruct","choices":[{"index":0,"message":{"role":"assistant","content":"Hello! How can I assist you today?","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[],"reasoning":null,"reasoning_content":null},"logprobs":null,"finish_reason":"stop","stop_reason":null,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":37,"total_tokens":47,"completion_tokens":10,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}$ 
+curl http://localhost:8000/v1/chat/completions -H 'Content-Type: application/json' -d '{"model": "Qwen/Qwen2.5-0.5B-Instruct", "messages": [{"role": "user", "content": "Hello!"}]}'
+Handling connection for 8000
+{"id":"chatcmpl-99645ba3-f64f-49f5-8e47-db1a4bd92e99","object":"chat.completion","created":1772388583,"model":"Qwen/Qwen2.5-0.5B-Instruct","choices":[{"index":0,"message":{"role":"assistant","content":"Hello! How can I assist you today? If you have any questions or need help with anything specific, feel free to ask. I'm here to provide information and answer your queries in the best way possible.","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[],"reasoning":null,"reasoning_content":null},"logprobs":null,"finish_reason":"stop","stop_reason":null,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":31,"total_tokens":74,"completion_tokens":43,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}(sglang-dev)
+
+
+

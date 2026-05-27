@@ -1,0 +1,102 @@
+ 🍕 $python T5_training_Single.py --model-name google/flan-t5-xl
+Using device: cuda
+Loading checkpoint shards: 100%|| 2/2 [00:00<00:00, 59.51it/s]
+Loading training dataset...
+Training dataset size: 1500
+Loading validation dataset...
+Validation dataset size: 300
+bFloat16 enabled for mixed precision - using bfSixteen policy
+--> current date and time of run = 2025-12-28-02:50:44_AM
+Training Epoch 1:   0%|                                                                                                         | 0/375 [00:00<?, ?it/s]
+Training Epoch 1: 100%|| 375/375 [01:26<00:00,  4.32it/s]
+Train Epoch: 1, Loss: 0.4806
+Validation:   0%|                                                                                                                | 0/75 [00:00<?, ?it/s]
+Validation: 100%|█| 75/75 [00:04<00:00, 16.23it/s]
+Validation Loss: 0.3739
+--> Epoch 1 completed in 91.39 seconds
+-->>>> New Best Val Loss Record: 0.3739
+Training Epoch 2: 100%|| 375/375 [01:25<00:00,  4.37it/s]
+Train Epoch: 2, Loss: 0.2481
+Validation: 100%|█| 75/75 [00:04<00:00, 16.30it/s]
+Validation Loss: 0.3746
+--> Epoch 2 completed in 90.48 seconds
+Training Epoch 3: 100%|| 375/375 [01:26<00:00,  4.35it/s]
+Train Epoch: 3, Loss: 0.1451
+Validation: 100%|█| 75/75 [00:04<00:00, 16.29it/s]
+Validation Loss: 0.4196
+--> Epoch 3 completed in 90.75 seconds
+Training Epoch 4: 100%|█▋| 374/375 [01:25<00:00,  4.38it/s]
+======================================================================
+Memory Usage BEFORE Last Iteration (Epoch 4, Iteration 375/375):
+======================================================================
+GPU 0:
+  Allocated: 43.07 GB
+  Reserved:  62.80 GB
+  Max Allocated (peak): 57.66 GB
+======================================================================
+
+Training Epoch 4: 100%|| 375/375 [01:25<00:00,  4.36it/s]
+Train Epoch: 4, Loss: 0.0918
+Validation: 100%|█| 75/75 [00:04<00:00, 16.29it/s]
+Validation Loss: 0.4569
+--> Epoch 4 completed in 90.56 seconds
+
+==================================================
+Training Summary
+==================================================
+Total time (including setup): 363.17 seconds (6.05 minutes)
+Training-only time (excludes setup/data loading): 363.17 seconds (6.05 minutes)
+Average time per epoch: 90.79 seconds
+Total epochs: 4
+Final training loss: 0.0918
+Best validation loss: 0.3739
+==================================================
+ 🍕 $torchrun --nnodes 1 --nproc_per_node 2 T5_training_FSDP1.py --model-name google/flan-t5-xl
+Loading checkpoint shards: 100%|| 2/2 [00:00<00:00, 59.77it/s]
+Loading checkpoint shards: 100%|| 2/2 [00:00<00:00, 62.37it/s]
+Loading training dataset...
+Training dataset size: 1500
+Loading validation dataset...
+Validation dataset size: 300
+bFloat16 enabled for mixed precision - using bfSixteen policy
+--> current date and time of run = 2025-12-28-03:00:22_AM
+r0 Training Epoch: 100%|| 188/188 [00:46<00:00,  4.05it/s]
+Train Epoch:    1, Loss:        0.8898
+Validation Epoch: 100%|█| 38/38 [00:02<00:00, 12.87it/s]
+Validation Loss: 0.5040
+--> epoch 1 completed...entering save and stats zone
+-->>>> New Val Loss Record: 0.5040475726127625
+r0 Training Epoch: 100%|| 188/188 [00:45<00:00,  4.10it/s]
+Train Epoch:    2, Loss:        0.4115
+Validation Epoch: 100%|█| 38/38 [00:02<00:00, 12.85it/s]
+Validation Loss: 0.3958
+--> epoch 2 completed...entering save and stats zone
+-->>>> New Val Loss Record: 0.39582905173301697
+r0 Training Epoch: 100%|| 188/188 [00:45<00:00,  4.10it/s]
+Train Epoch:    3, Loss:        0.2500
+Validation Epoch: 100%|█| 38/38 [00:02<00:00, 12.84it/s]
+Validation Loss: 0.4244
+--> epoch 3 completed...entering save and stats zone
+r0 Training Epoch:  99%|█▌| 187/188 [00:45<00:00,  4.16it/s]
+======================================================================
+Memory Usage BEFORE Last Iteration (Epoch 4, Iteration 188/188):
+======================================================================
+GPU 0:
+  Allocated: 21.83 GB
+  Reserved:  43.59 GB
+  Max Allocated (peak): 33.29 GB
+======================================================================
+
+r0 Training Epoch: 100%|| 188/188 [00:45<00:00,  4.09it/s]
+Train Epoch:    4, Loss:        0.1451
+Validation Epoch: 100%|█| 38/38 [00:02<00:00, 12.88it/s]
+Validation Loss: 0.4879
+--> epoch 4 completed...entering save and stats zone
+
+======================================================================
+Training-Only Time Summary (excludes setup/data loading)
+======================================================================
+Total training time: 196.01 seconds (3.27 minutes)
+Average time per epoch: 49.00 seconds
+Total epochs: 4
+======================================================================

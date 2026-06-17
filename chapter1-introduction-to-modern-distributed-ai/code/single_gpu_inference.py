@@ -8,7 +8,7 @@ import torch.nn as nn
 import time
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
-from mdaisy import get_resnet18_fashionmnist
+from distai import get_resnet18_fashionmnist
 
 def benchmark_inference(num_requests=1000, batch_size=1):
     """Benchmark inference throughput on single GPU"""

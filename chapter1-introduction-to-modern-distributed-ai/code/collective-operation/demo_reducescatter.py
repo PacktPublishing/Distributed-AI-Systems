@@ -19,7 +19,7 @@ Usage:
 import torch
 import torch.distributed as dist
 import argparse
-from mdaisy import init_distributed, sync_print
+from distai import init_distributed, sync_print
 
 def demo_reducescatter(rank, world_size, device):
     """

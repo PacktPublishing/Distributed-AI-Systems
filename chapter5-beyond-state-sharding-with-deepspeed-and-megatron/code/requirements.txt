@@ -1,0 +1,4 @@
+torch
+deepspeed
+transformers
+megatron-core

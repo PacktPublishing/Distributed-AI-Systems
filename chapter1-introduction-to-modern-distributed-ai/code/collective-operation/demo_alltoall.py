@@ -18,7 +18,7 @@ import torch
 import torch.distributed as dist
 import argparse
 import sys
-from mdaisy import init_distributed, sync_print
+from distai import init_distributed, sync_print
 
 def demo_alltoall(rank, world_size, device):
     """

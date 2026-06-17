@@ -9,7 +9,7 @@ import torch.optim as optim
 import time
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
-from mdaisy import get_resnet18_fashionmnist
+from distai import get_resnet18_fashionmnist
 
 def train_single_gpu():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

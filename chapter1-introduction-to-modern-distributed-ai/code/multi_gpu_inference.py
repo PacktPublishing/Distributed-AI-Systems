@@ -14,7 +14,7 @@ from torch.utils.data import DataLoader, DistributedSampler
 from torchvision import datasets, transforms
 import os
 import time
-from mdaisy import get_resnet18_fashionmnist, setup_distributed, cleanup_distributed
+from distai import get_resnet18_fashionmnist, setup_distributed, cleanup_distributed
 
 def benchmark_distributed_inference(num_requests=1000, batch_size=1):
     """Benchmark distributed inference across multiple GPUs"""

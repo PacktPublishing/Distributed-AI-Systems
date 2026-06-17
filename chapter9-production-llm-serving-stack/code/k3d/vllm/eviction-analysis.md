@@ -1,110 +1,110 @@
-# vLLM 在 Kubernetes 中触发 disk-pressure 的深层原因
+# Root Causes of vLLM Triggering disk-pressure in Kubernetes
 
-## 一、vLLM 的 I/O 特征
+## 1. vLLM I/O Characteristics
 
-### 1. 镜像层压力
-- **镜像大小**: vllm/vllm-openai:latest 约 19.5GB
-- **拉取行为**: 首次拉取需要下载所有 layer
-- **存储位置**: `/var/lib/docker/overlay2` (nodefs)
-- **影响**: 在 disk-pressure 节点上，image pull 可能失败或触发 eviction
+### 1. Image Layer Pressure
+- **Image size**: `vllm/vllm-openai:latest` is about 19.5 GB
+- **Pull behavior**: the first pull downloads all layers
+- **Storage location**: `/var/lib/docker/overlay2` (`nodefs`)
+- **Impact**: on a disk-pressure node, the image pull may fail or trigger eviction
 
-### 2. 模型下载和缓存
-vLLM 使用 HuggingFace，默认行为：
+### 2. Model Download and Caching
+vLLM uses HuggingFace, and by default:
 
 ```
 /root/.cache/huggingface/
-├── hub/                    # 模型文件（GB 级别）
+├── hub/                    # model files (GB scale)
 ├── transformers/           # tokenizer cache
-└── datasets/               # 数据集 cache（如果有）
+└── datasets/               # dataset cache (if any)
 ```
 
-**问题**:
-- 默认路径在容器 overlayfs 内 → 写入 nodefs
-- Llama-3.2-1B-Instruct 约 2-3GB
-- 如果使用更大的模型（7B, 13B），可能 10-30GB
+**Problems**:
+- The default path is inside the container overlayfs -> writes to `nodefs`
+- Llama-3.2-1B-Instruct is about 2-3 GB
+- Larger models (7B, 13B) can be 10-30 GB
 
-### 3. KV Cache 和临时文件
-vLLM 运行时会产生：
-- KV cache（在 GPU memory，但可能有 swap）
-- 临时 token 文件
-- 日志文件（stderr/stdout）
+### 3. KV Cache and Temporary Files
+At runtime, vLLM generates:
+- KV cache (in GPU memory, but swap may exist)
+- Temporary token files
+- Log files (stderr/stdout)
 
-### 4. 日志写入
-- kubelet 会收集容器日志
-- 写入 `/var/log/pods/` 或 `/var/lib/containers/`
-- vLLM 的 verbose 日志可能很大
+### 4. Log Writing
+- kubelet collects container logs
+- Logs are written to `/var/log/pods/` or `/var/lib/containers/`
+- Verbose vLLM logs can become very large
 
-## 二、kubelet eviction 机制
+## 2. kubelet Eviction Mechanism
 
-### 1. 监控的路径
-kubelet 监控以下路径的磁盘使用：
+### 1. Monitored Paths
+kubelet monitors disk usage on these paths:
 
 ```
-nodefs (根分区):
+nodefs (root filesystem):
   - /var/lib/docker (overlay2, volumes)
   - /var/lib/containers
   - /var/log/pods
-  - /tmp (如果使用)
+  - /tmp (if used)
 
-imagefs (如果独立):
+imagefs (if separate):
   - /var/lib/docker/images
 ```
 
-### 2. 默认阈值
-kubelet 默认 eviction 阈值：
+### 2. Default Thresholds
+kubelet's default eviction thresholds:
 
 ```yaml
 evictionHard:
-  nodefs.available: "10%"      # 或 15%
+  nodefs.available: "10%"      # or 15%
   imagefs.available: "15%"
   nodefs.inodesFree: "5%"
 ```
 
-当磁盘使用率超过阈值：
-1. 节点标记为 `DiskPressure=True`
-2. 停止调度新 Pod（除非有 toleration）
-3. 开始驱逐 Pod（按优先级）
+When disk usage exceeds the threshold:
+1. The node is marked `DiskPressure=True`
+2. New Pods stop being scheduled unless they have a toleration
+3. Pod eviction begins based on priority
 
-### 3. 驱逐顺序
-kubelet 按以下顺序驱逐：
+### 3. Eviction Order
+kubelet evicts pods in this order:
 
-1. **BestEffort** Pod（无 requests）
-2. **Burstable** Pod（requests < limits）
-3. **Guaranteed** Pod（requests == limits）
+1. **BestEffort** Pods (no requests)
+2. **Burstable** Pods (requests < limits)
+3. **Guaranteed** Pods (requests == limits)
 
-你的 test-vllm Pod 是 **Burstable**，所以：
-- 有 toleration → 可以被调度
-- 但一旦压力继续上升 → 仍可能被驱逐
+The test-vLLM Pod is **Burstable**, so:
+- It can be scheduled if it has a toleration
+- But if pressure continues to rise, it may still be evicted
 
-## 三、为什么 vLLM 特别容易触发 disk-pressure
+## 3. Why vLLM Is Especially Prone to disk-pressure
 
-### 1. 镜像 + 模型双重压力
+### 1. Combined Image and Model Pressure
 ```
-镜像拉取: 19.5GB → nodefs
-模型下载: 2-3GB → nodefs (如果 cache 在 overlayfs)
-总计: ~22GB 写入
+Image pull: 19.5 GB -> nodefs
+Model download: 2-3 GB -> nodefs (if cache lives in overlayfs)
+Total: about 22 GB written
 ```
 
-在 90% 使用率的节点上，这很容易触发阈值。
+On a node already at 90% usage, this easily triggers the threshold.
 
-### 2. 写入时机集中
-vLLM 启动时：
-1. 拉取镜像（如果本地没有）
-2. 下载模型（如果 cache 没有）
-3. 加载模型到 GPU memory
-4. 开始 serving
+### 2. Concentrated Write Bursts
+When vLLM starts:
+1. Pull the image (if it is not already local)
+2. Download the model (if the cache is missing)
+3. Load the model into GPU memory
+4. Start serving
 
-前两步都在短时间内大量写入 nodefs。
+The first two steps write large amounts to `nodefs` in a short period.
 
-### 3. 缓存策略问题
-默认 HuggingFace cache 在 `/root/.cache`：
-- 在容器 overlayfs 内
-- 写入会落到 nodefs
-- 即使模型已下载，每次启动可能还会验证/更新 cache
+### 3. Cache Strategy Issues
+The default HuggingFace cache is under `/root/.cache`:
+- It lives inside the container overlayfs
+- Writes land on `nodefs`
+- Even when the model is already downloaded, startup may still verify or refresh the cache
 
-## 四、解决方案
+## 4. Solutions
 
-### 方案 1: 使用 PVC 存储 cache（推荐）
+### Option 1: Use PVC Storage for the Cache (Recommended)
 ```yaml
 volumes:
 - name: hf-cache
@@ -115,12 +115,12 @@ volumeMounts:
   mountPath: /root/.cache/huggingface
 ```
 
-**优点**:
-- cache 存储在独立分区（如 /raid）
-- 不加重 nodefs
-- 可以跨 Pod 共享
+**Benefits**:
+- Cache is stored on a separate partition such as `/raid`
+- It does not add pressure to `nodefs`
+- It can be shared across Pods
 
-### 方案 2: 使用 hostPath 到 /raid
+### Option 2: Use hostPath to /raid
 ```yaml
 volumes:
 - name: hf-cache
@@ -129,41 +129,41 @@ volumes:
     type: DirectoryOrCreate
 ```
 
-**优点**:
-- 简单直接
-- 不依赖 PVC
-- 直接使用 /raid（空间充足）
+**Benefits**:
+- Simple and direct
+- Does not depend on PVCs
+- Uses `/raid` directly, which usually has plenty of space
 
-### 方案 3: 预拉取镜像和模型
-在非 disk-pressure 节点上：
-1. 预拉取镜像
-2. 预下载模型到共享 cache
-3. 再调度到目标节点
+### Option 3: Pre-pull Images and Models
+On a node that is not under disk-pressure:
+1. Pre-pull the image
+2. Pre-download the model into a shared cache
+3. Then schedule onto the target node
 
-### 方案 4: 调整 kubelet eviction 阈值
-修改 k3d 集群配置，提高阈值：
+### Option 4: Adjust kubelet Eviction Thresholds
+Modify the k3d cluster configuration to raise the threshold:
 
 ```yaml
-# 在 k3d 创建时通过 --k3s-arg
+# Use --k3s-arg when creating the k3d cluster
 --k3s-arg '--kubelet-arg=eviction-hard=nodefs.available<5%'
 ```
 
-**风险**: 可能延迟发现问题，导致更严重的磁盘满
+**Risk**: This may delay issue detection and lead to a worse disk-full condition
 
-## 五、最佳实践总结
+## 5. Best Practices Summary
 
-### 对于 vLLM Serving Pod：
+### For vLLM Serving Pods:
 
-1. **固定镜像版本**（不用 latest）
-2. **使用 PVC 存储 cache**（避免 nodefs）
-3. **移除 disk-pressure toleration**（生产环境）
-4. **设置合理的资源 requests**（避免 OOM + eviction）
-5. **添加健康检查**（及时发现问题）
-6. **使用 Guaranteed QoS**（降低被驱逐优先级）
+1. **Pin the image version** instead of using `latest`
+2. **Use PVC storage for the cache** to avoid `nodefs`
+3. **Remove disk-pressure toleration** in production
+4. **Set reasonable resource requests** to avoid OOM and eviction
+5. **Add health checks** to detect problems early
+6. **Use Guaranteed QoS** to lower eviction priority
 
-### 对于 Debug Pod：
+### For Debug Pods:
 
-1. **使用 emptyDir**（限制大小）
-2. **临时 toleration**（仅用于调试）
-3. **验证后立即删除**
-4. **不要用于实际 inference**
+1. **Use `emptyDir`** to limit size
+2. **Use temporary tolerations** only for debugging
+3. **Delete the pod after validation**
+4. **Do not use it for real inference**

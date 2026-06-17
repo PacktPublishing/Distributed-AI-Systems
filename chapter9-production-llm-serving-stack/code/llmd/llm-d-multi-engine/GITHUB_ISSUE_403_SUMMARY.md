@@ -1,64 +1,64 @@
-# GitHub Issue #403 总结
+# GitHub Issue #403 Summary
 
-## Issue 信息
+## Issue Details
 
-- **标题**: [EPIC] Support sglang
-- **链接**: https://github.com/llm-d/llm-d/issues/403
-- **创建时间**: 2025年10月29日
-- **状态**: Open
+- **Title**: [EPIC] Support sglang
+- **Link**: https://github.com/llm-d/llm-d/issues/403
+- **Created**: October 29, 2025
+- **Status**: Open
 - **Assignee**: ezrasilvera
 
-## 描述
+## Description
 
-这是一个 EPIC issue，用于跟踪所有 llm-d/llm-d 相关的 SGLang 支持任务，同时也是所有其他 llm-d repos 所需更改的占位符。
+This is an EPIC issue used to track all SGLang support tasks related to llm-d/llm-d, and it also serves as a placeholder for changes needed across the other llm-d repositories.
 
-## 任务清单
+## Task List
 
-### 1. Inference Scheduler 支持
+### 1. Inference Scheduler Support
 - [ ] [EPIC] Support sglang in the inference scheduler
-  - 相关 issue: [llm-d-inference-scheduler#394](https://github.com/llm-d/llm-d-inference-scheduler/issues/394)
+  - Related issue: [llm-d-inference-scheduler#394](https://github.com/llm-d/llm-d-inference-scheduler/issues/394)
 
-### 2. Well-lit Path Guides 支持
+### 2. Well-lit Path Guides Support
 - [ ] Support sglang in all well-lit path guides
   - [ ] [Feat] Sglang support for well-lit path of approximate prefix cache aware scorer
-    - 相关 issue: [llm-d/llm-d#519](https://github.com/llm-d/llm-d/issues/519)
+    - Related issue: [llm-d/llm-d#519](https://github.com/llm-d/llm-d/issues/519)
   - [ ] [Feat] Sglang support for well-lit path of precise prefix cache aware scorer
-    - 相关 issue: [llm-d/llm-d#520](https://github.com/llm-d/llm-d/issues/520)
+    - Related issue: [llm-d/llm-d#520](https://github.com/llm-d/llm-d/issues/520)
   - [ ] [Feat] Sglang support for well-lit path of Prefill/Decode Disaggregation
-    - 相关 issue: [llm-d/llm-d#521](https://github.com/llm-d/llm-d/issues/521)
+    - Related issue: [llm-d/llm-d#521](https://github.com/llm-d/llm-d/issues/521)
 
-## 相关引用
+## Related References
 
 ### Gateway API Extension
-需要在 `gateway-api-inference-extension` 中添加基本支持：
-- 相关 issue: [kubernetes-sigs/gateway-api-inference-extension#1141](https://github.com/kubernetes-sigs/gateway-api-inference-extension/issues/1141)
+Basic support needs to be added in `gateway-api-inference-extension`:
+- Related issue: [kubernetes-sigs/gateway-api-inference-extension#1141](https://github.com/kubernetes-sigs/gateway-api-inference-extension/issues/1141)
 
-## 进展
+## Progress
 
-### 2025年12月3日
+### December 3, 2025
 - PR #527: "Add SGLang option for inference-scheduling well-lit path"
-  - 链接: https://github.com/llm-d/llm-d/pull/527
-  - 状态: Open
+  - Link: https://github.com/llm-d/llm-d/pull/527
+  - Status: Open
 
-## 影响
+## Impact
 
-这个 EPIC issue 证实了：
+This EPIC issue confirms that:
 
-1. **SGLang 支持是计划中的功能**，但仍在开发中
-2. **需要多个仓库的协作**才能完全支持 SGLang
-3. **示例文件中的 `sglangServe`** 是前瞻性的，展示了未来功能的使用方式
-4. **当前 ModelService Helm chart 不支持 `sglangServe`** 是因为功能尚未完全实现
+1. **SGLang support is a planned feature**, but it is still under development
+2. **Multiple repositories must work together** to fully support SGLang
+3. **`sglangServe` in the example files** is forward-looking and demonstrates how the future feature will be used
+4. **The current ModelService Helm chart does not support `sglangServe`** because the feature is not fully implemented yet
 
-## 当前状态
+## Current Status
 
-- ✅ llm-d 示例文件展示了 `sglangServe` 的用法
-- ❌ ModelService Helm chart (v0.3.8) 不支持 `sglangServe`
-- 🔄 相关工作正在进行中（PR #527 等）
-- ⏳ 需要等待相关 PR 合并和 chart 更新
+- ✅ The llm-d example files show how to use `sglangServe`
+- ❌ The ModelService Helm chart (v0.3.8) does not support `sglangServe`
+- 🔄 Related work is in progress (including PR #527)
+- ⏳ We need to wait for the relevant PRs to merge and for the chart to be updated
 
-## 建议
+## Recommendations
 
-1. **监控 PR #527** 的进展，这可能是添加 `sglangServe` 支持的关键 PR
-2. **关注 issue #403** 的更新，了解整体进展
-3. **当前使用 `custom` 模式**部署 SGLang，通过 routing-proxy sidecar 获得部分 llm-d 功能
-4. **等待 chart 更新**后再尝试使用 `sglangServe`
+1. **Watch PR #527** closely, as it may be the key PR for adding `sglangServe` support
+2. **Follow issue #403** for updates on the overall progress
+3. **Use `custom` mode for SGLang today**, and rely on the routing-proxy sidecar to get some llm-d functionality
+4. **Wait for the chart update** before trying `sglangServe`

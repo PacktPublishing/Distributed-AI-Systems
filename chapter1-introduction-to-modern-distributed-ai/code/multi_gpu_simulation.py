@@ -39,30 +39,30 @@ import os
 
 def simulate_multi_gpu():
     """Simulate multi-GPU distributed training on a single GPU"""
-    # torchrun 会自动初始化进程组，但为了兼容性我们也可以手动初始化
+    # torchrun initializes the process group automatically, but we can also initialize it manually for compatibility
     if not dist.is_initialized():
         dist.init_process_group("nccl")
     
-    # 获取 rank 和 local_rank
+    # Get rank and local_rank
     rank = dist.get_rank()
     local_rank = int(os.environ.get('LOCAL_RANK', rank))
     world_size = dist.get_world_size()
     
-    # 设置设备（在单GPU模拟时，所有进程都使用GPU 0）
+    # Set the device (in single-GPU simulation, all processes use GPU 0)
     available_gpus = torch.cuda.device_count()
     if available_gpus == 1:
         device_id = 0
-        mode = "单GPU模拟模式"
+        mode = "Single-GPU simulation mode"
     else:
         device_id = local_rank
-        mode = "多GPU模式"
+        mode = "Multi-GPU mode"
     
     torch.cuda.set_device(device_id)
     device = torch.device(f'cuda:{device_id}')
     
-    # 打印信息
+        # Print information
     print(f"Rank {rank} (local_rank={local_rank}, world_size={world_size}) says hello. "
-          f"使用设备: {device} [{mode}]")
+            f"Using device: {device} [{mode}]")
     
     dist.destroy_process_group()
 

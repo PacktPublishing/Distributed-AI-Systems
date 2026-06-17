@@ -1,142 +1,142 @@
-# PR #527 分析：Add SGLang option for inference-scheduling well-lit path
+# PR #527 Analysis: Add SGLang option for inference-scheduling well-lit path
 
-## PR 概述
+## PR Overview
 
-- **PR 编号**: #527
-- **标题**: Add SGLang option for inference-scheduling well-lit path
-- **作者**: andreyod
-- **状态**: Open (需要 review)
-- **相关 Issue**: #519, #403
-- **变更统计**: +147 −4 (4 个文件)
+- **PR number**: #527
+- **Title**: Add SGLang option for inference-scheduling well-lit path
+- **Author**: andreyod
+- **Status**: Open (needs review)
+- **Related issues**: #519, #403
+- **Change summary**: +147 −4 (4 files)
 
-## 目的
+## Purpose
 
-在 "Intelligent Inference Scheduling" well-lit path 中添加 SGLang 作为推理服务器的选项，作为 vLLM 的替代。
+Add SGLang as an inference server option in the "Intelligent Inference Scheduling" well-lit path, as an alternative to vLLM.
 
-## 变更范围
+## Scope of Changes
 
-### 1. 支持范围
+### 1. Supported Scope
 - **Profile**: "approximate prefix cache aware"
-- **Gateway**: 默认 Istio gateway
+- **Gateway**: default Istio gateway
 - **Hardware**: GPU hardware
-- **限制**: 目前仅支持上述配置组合
+- **Limitations**: only the above configuration combination is supported for now
 
-### 2. 文件变更
+### 2. File Changes
 
-#### 新增文件
+#### New Files
 
 1. **`guides/inference-scheduling/ms-inference-scheduling/values_sglang.yaml`**
-   - SGLang ModelService 的配置值
-   - 使用 `docker.io/lmsysorg/sglang:v0.5.5.post1` 镜像
-   - 配置了 routing-proxy sidecar，connector 设置为 `sglang`
-   - 端口：8200（避免与 routing-proxy 的 8000 冲突）
-   - 模型：Qwen/Qwen3-0.6B
+   - SGLang ModelService configuration values
+   - Uses the `docker.io/lmsysorg/sglang:v0.5.5.post1` image
+   - Configures a routing-proxy sidecar, with the connector set to `sglang`
+   - Port: 8200 (to avoid conflicting with the routing-proxy on port 8000)
+   - Model: Qwen/Qwen3-0.6B
 
 2. **`guides/inference-scheduling/gaie-inference-scheduling/values_sglang.yaml`**
-   - GAIE (Gateway API Inference Extension) 的 SGLang 配置
+   - SGLang configuration for GAIE (Gateway API Inference Extension)
 
-#### 修改文件
+#### Modified Files
 
 1. **`guides/inference-scheduling/helmfile.yaml.gotmpl`**
-   - 添加了 `sglang: &SGL` 环境配置
-   - 支持通过 `-e sglang` 参数选择 SGLang 环境
+   - Added a `sglang: &SGL` environment configuration
+   - Supports selecting the SGLang environment with `-e sglang`
 
 2. **`guides/inference-scheduling/README.md`**
-   - 添加了 "Inference Server Selection" 章节
-   - 说明如何使用 SGLang：
+   - Added an "Inference Server Selection" section
+   - Explains how to use SGLang:
      ```bash
      helmfile apply -e sglang -n ${NAMESPACE}
      ```
 
-## 关键配置细节
+## Key Configuration Details
 
-### SGLang 配置特点
+### SGLang Configuration Characteristics
 
-1. **镜像**: `docker.io/lmsysorg/sglang:v0.5.5.post1`（官方镜像）
-2. **端口**: 8200（避免与 routing-proxy 的 8000 冲突）
-3. **Connector**: `sglang`（使用 SGLang 专用的 connector）
-4. **命令**: `python3 -m sglang.launch_server`
-5. **健康检查**:
+1. **Image**: `docker.io/lmsysorg/sglang:v0.5.5.post1` (official image)
+2. **Port**: 8200 (to avoid conflicting with the routing-proxy on port 8000)
+3. **Connector**: `sglang` (uses the dedicated SGLang connector)
+4. **Command**: `python3 -m sglang.launch_server`
+5. **Health checks**:
    - Startup: `/v1/models` on port 8200
    - Liveness: `/health` on port 8200
    - Readiness: `/v1/models` on port 8200
 
-### 与当前部署的对比
+### Comparison with the Current Deployment
 
-| 特性 | PR #527 | 当前部署 (llm-d-multi-engine) |
+| Feature | PR #527 | Current deployment (llm-d-multi-engine) |
 |------|---------|-------------------------------|
-| 镜像 | `lmsysorg/sglang:v0.5.5.post1` | `lmsysorg/sglang:v0.5.6.post2-runtime` |
-| 端口 | 8200 | 8200 |
+| Image | `lmsysorg/sglang:v0.5.5.post1` | `lmsysorg/sglang:v0.5.6.post2-runtime` |
+| Port | 8200 | 8200 |
 | Connector | `sglang` | `nixlv2` |
-| modelCommand | `custom` (手动指定命令) | `custom` |
-| 模型 | Qwen/Qwen3-0.6B | Qwen/Qwen2.5-0.5B-Instruct |
+| modelCommand | `custom` (manual command) | `custom` |
+| Model | Qwen/Qwen3-0.6B | Qwen/Qwen2.5-0.5B-Instruct |
 
-## Review 反馈
+## Review Feedback
 
-### 1. liu-cong 的评论
-- **关注点**: SGLang 不是环境，而是环境的组件
-- **建议**: 考虑更好的组织结构，可能不需要自动化，而是在用户指南中添加标签页让用户选择
+### 1. Comment from liu-cong
+- **Concern**: SGLang is not an environment; it is a component of the environment
+- **Suggestion**: Consider a better organization, perhaps without automation, and instead add a tab in the user guide so users can choose
 
-### 2. ezrasilvera 的回应
-- **观点**: 同意可能不是最优方式，但应该集成到自动化中
-- **理由**: 
-  - 未来会有回归测试
-  - SGLang 应该被视为与 vLLM 同等的一等公民
-  - 需要自动验证不会破坏功能
+### 2. Reply from ezrasilvera
+- **View**: Agreed it may not be the best approach, but it should still be integrated into automation
+- **Reasoning**:
+  - There will be regression tests in the future
+  - SGLang should be treated as a first-class citizen alongside vLLM
+  - Automatic validation is needed to ensure the feature is not broken
 
-### 3. hhk7734 的建议
-- **问题**: routing-proxy connector 应该使用 `sglang` 而不是 `nixlv2`
-- **参考**: [connector_sglang.go](https://github.com/llm-d/llm-d-inference-scheduler/blob/main/pkg/sidecar/proxy/connector_sglang.go)
-- **状态**: ✅ 已修复（作者已更新为 `connector: sglang`）
+### 3. Suggestion from hhk7734
+- **Issue**: the routing-proxy connector should use `sglang` rather than `nixlv2`
+- **Reference**: [connector_sglang.go](https://github.com/llm-d/llm-d-inference-scheduler/blob/main/pkg/sidecar/proxy/connector_sglang.go)
+- **Status**: ✅ Fixed (the author updated it to `connector: sglang`)
 
-## 与 Issue #403 的关系
+## Relationship to Issue #403
 
-这个 PR 是 [Issue #403](https://github.com/llm-d/llm-d/issues/403) (EPIC: Support sglang) 的一部分，具体对应：
+This PR is part of [Issue #403](https://github.com/llm-d/llm-d/issues/403) (EPIC: Support sglang), specifically:
 - Issue #519: Sglang support for well-lit path of approximate prefix cache aware scorer
 
-## 未来计划
+## Future Plans
 
-根据 PR 描述，还计划探索：
-- P/D Disaggregation 场景
-- Precise Prefix 场景
+According to the PR description, future work will also explore:
+- P/D disaggregation scenarios
+- Precise prefix scenarios
 
-这些都在 Issue #403 的 EPIC 中跟踪。
+These are tracked in the Issue #403 EPIC.
 
-## 评估
+## Evaluation
 
-### 优点 ✅
+### Strengths ✅
 
-1. **最小化代码变更**: 通过添加新的环境配置而不是重构整个框架
-2. **清晰的文档**: README 中明确说明了如何使用
-3. **正确的 connector**: 使用 SGLang 专用的 connector
-4. **完整的配置**: 包含健康检查、监控等完整配置
+1. **Minimal code change**: adds a new environment configuration rather than refactoring the whole framework
+2. **Clear documentation**: README explains how to use it
+3. **Correct connector**: uses the dedicated SGLang connector
+4. **Complete configuration**: includes health checks, monitoring, and other production details
 
-### 限制 ⚠️
+### Limitations ⚠️
 
-1. **范围有限**: 仅支持特定配置组合（Istio + GPU + approximate prefix cache aware）
-2. **不是一等公民**: 通过环境变量选择，而不是作为 modelCommand 选项
-3. **版本差异**: 使用的 SGLang 版本 (`v0.5.5.post1`) 与当前部署不同
+1. **Limited scope**: only supports a specific configuration combination (Istio + GPU + approximate prefix cache aware)
+2. **Not a first-class citizen**: selected through environment variables rather than a `modelCommand` option
+3. **Version mismatch**: the SGLang version used (`v0.5.5.post1`) is different from the current deployment
 
-### 对当前部署的影响
+### Impact on the Current Deployment
 
-这个 PR **不会直接影响**当前的 `llm-d-multi-engine` 部署，因为：
-1. 它只影响 `guides/inference-scheduling` 路径
-2. 当前部署使用的是 ModelService Helm chart，不是这个 well-lit path
-3. 但可以作为参考，了解如何正确配置 SGLang
+This PR **does not directly affect** the current `llm-d-multi-engine` deployment because:
+1. It only affects the `guides/inference-scheduling` path
+2. The current deployment uses the ModelService Helm chart, not this well-lit path
+3. It is still a useful reference for how to configure SGLang correctly
 
-## 建议
+## Recommendations
 
-1. **等待 PR 合并**: 这个 PR 还在 review 中，等待合并后再考虑采用
-2. **关注 connector**: 确认当前部署是否应该使用 `sglang` connector 而不是 `nixlv2`
-3. **版本对齐**: 考虑是否要使用 PR 中使用的 SGLang 版本
+1. **Wait for the PR to merge**: this PR is still under review, so wait for it to merge before adopting it
+2. **Watch the connector**: confirm whether the current deployment should use the `sglang` connector instead of `nixlv2`
+3. **Align versions**: consider whether to use the SGLang version from the PR
 
-## 总结
+## Summary
 
-PR #527 是一个**渐进式的改进**，为 SGLang 支持奠定了基础。虽然它采用的环境变量方式可能不是最优雅的，但它是**最小侵入性**的实现方式，符合项目的当前架构。
+PR #527 is a **gradual improvement** that lays the groundwork for SGLang support. Although the environment-variable approach may not be the cleanest, it is a **minimally invasive** implementation that fits the current architecture.
 
-这个 PR 表明：
-- ✅ SGLang 支持正在积极开发中
-- ✅ 有专门的 SGLang connector 可用
-- ✅ 社区正在努力将 SGLang 作为一等公民集成
+This PR shows that:
+- ✅ SGLang support is actively being developed
+- ✅ A dedicated SGLang connector is available
+- ✅ The community is working to integrate SGLang as a first-class citizen
 
-对于当前部署，这个 PR 主要提供**参考价值**，展示了如何正确配置 SGLang 与 llm-d 的集成。
+For the current deployment, this PR is mainly a **reference point** showing how to configure SGLang integration with llm-d correctly.

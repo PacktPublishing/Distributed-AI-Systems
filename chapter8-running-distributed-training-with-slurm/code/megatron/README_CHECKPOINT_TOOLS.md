@@ -1,72 +1,72 @@
-# Megatron-LM tools/checkpoint/ 目录文件说明
+# Megatron-LM tools/checkpoint/ Directory Overview
 
-## 概述
+## Overview
 
-`tools/checkpoint/` 目录包含 Megatron-LM 的 checkpoint 转换工具，使用**插件系统**（loader/saver）来实现不同格式之间的转换。
+The `tools/checkpoint/` directory contains Megatron-LM checkpoint conversion tools that use a **plugin system** (loader/saver) to convert between formats.
 
-## 核心文件
+## Core Files
 
-### 1. `convert.py` - 主转换工具
-**作用**：通用的 checkpoint 转换框架
+### 1. `convert.py` - Main Conversion Tool
+**Purpose**: General checkpoint conversion framework
 
-**工作原理**：
-- 使用 **loader** 插件加载源格式的 checkpoint
-- 使用 **saver** 插件保存为目标格式的 checkpoint
-- 通过 multiprocessing.Queue 在 loader 和 saver 之间传递数据
+**How it works**:
+- Uses a **loader** plugin to load the source checkpoint
+- Uses a **saver** plugin to write the target checkpoint
+- Passes data between loader and saver through `multiprocessing.Queue`
 
-**使用方式**：
+**Usage**:
 ```bash
 python convert.py \
     --model-type GPT \
-    --loader <loader_name> \      # 指定 loader 插件
-    --saver <saver_name> \        # 指定 saver 插件
+    --loader <loader_name> \
+    --saver <saver_name> \
     --load-dir <source_dir> \
     --save-dir <target_dir>
 ```
 
-**支持的转换方向**：
-- HF/Meta → Megatron（有现成的 loader）
-- Megatron → Megatron（改变并行度）
-- Megatron → HF（需要自定义 saver，目前只有 LLaVA 的）
+**Supported conversion directions**:
+- HF/Meta → Megatron (loader already available)
+- Megatron → Megatron (change parallelism)
+- Megatron → HF (requires a custom saver; currently only LLaVA has one)
 
-## Loader 插件（加载器）
+## Loader Plugins
 
-### 2. `loader_base.py` - Loader 基类
-**作用**：定义所有 loader 的基础接口和通用功能
+### 2. `loader_base.py` - Loader Base Class
+**Purpose**: Defines the common interface and shared behavior for all loaders
 
-**关键方法**：
-- `load_checkpoint()`: 从队列接收数据的主函数
-- `send_metadata_over_queue()`: 发送模型元数据
-- `send_llm_over_queue()`: 发送 LLM 模型权重
+**Key methods**:
+- `load_checkpoint()`: Main function that receives data from the queue
+- `send_metadata_over_queue()`: Sends model metadata
+- `send_llm_over_queue()`: Sends LLM model weights
 
-### 3. `loader_core.py` - Megatron Core 格式加载器
-**作用**：加载 Megatron-LM 的 core 格式 checkpoint（torch_dist 格式）
+### 3. `loader_core.py` - Megatron Core Loader
+**Purpose**: Loads Megatron-LM core-format checkpoints (`torch_dist` format)
 
-**使用场景**：
-- 从 Megatron checkpoint 加载模型
-- 改变 tensor/pipeline parallel 大小
+**Use cases**:
+- Load a model from a Megatron checkpoint
+- Change tensor/pipeline parallel sizes
 
-**示例**：
+**Example**:
 ```bash
 python convert.py \
     --loader core \
     --load-dir checkpoints/gpt_8b/iter_0000010
 ```
 
-### 4. `loader_legacy.py` - Legacy 格式加载器
-**作用**：加载旧版 Megatron 格式的 checkpoint
+### 4. `loader_legacy.py` - Legacy Format Loader
+**Purpose**: Loads old Megatron checkpoint formats
 
-**使用场景**：
-- 迁移旧版 checkpoint 到新格式
+**Use cases**:
+- Migrate older checkpoints to the new format
 
-### 5. `loader_llama_mistral.py` - Llama/Mistral 加载器
-**作用**：从 HuggingFace 或 Meta 格式加载 Llama/Mistral 模型
+### 5. `loader_llama_mistral.py` - Llama/Mistral Loader
+**Purpose**: Loads Llama/Mistral models from HuggingFace or Meta formats
 
-**支持的格式**：
-- HuggingFace 格式（`--checkpoint-type hf`）
-- Meta 格式（`--checkpoint-type meta`）
+**Supported formats**:
+- HuggingFace format (`--checkpoint-type hf`)
+- Meta format (`--checkpoint-type meta`)
 
-**示例**：
+**Example**:
 ```bash
 python convert.py \
     --loader llama_mistral \
@@ -75,30 +75,30 @@ python convert.py \
     --model-size llama2-7B
 ```
 
-### 6. `loader_mixtral_hf.py` - Mixtral HF 加载器
-**作用**：从 HuggingFace 格式加载 Mixtral 模型
+### 6. `loader_mixtral_hf.py` - Mixtral HF Loader
+**Purpose**: Loads Mixtral models from HuggingFace format
 
-### 7. `loader_llava.py` - LLaVA 加载器
-**作用**：加载 LLaVA 多模态模型的 checkpoint
+### 7. `loader_llava.py` - LLaVA Loader
+**Purpose**: Loads checkpoints for LLaVA multimodal models
 
-## Saver 插件（保存器）
+## Saver Plugins
 
-### 8. `saver_base.py` - Saver 基类
-**作用**：定义所有 saver 的基础接口和通用功能
+### 8. `saver_base.py` - Saver Base Class
+**Purpose**: Defines the common interface and shared behavior for all savers
 
-**关键方法**：
-- `save_checkpoint()`: 从队列接收数据并保存的主函数
-- `receive_checkpoint_metadata()`: 接收模型元数据
-- `receive_lm()`: 接收 LLM 模型权重
+**Key methods**:
+- `save_checkpoint()`: Main function that receives data from the queue and saves it
+- `receive_checkpoint_metadata()`: Receives model metadata
+- `receive_lm()`: Receives LLM model weights
 
-### 9. `saver_core.py` - Megatron Core 格式保存器
-**作用**：保存为 Megatron-LM 的 core 格式（torch_dist 格式）
+### 9. `saver_core.py` - Megatron Core Saver
+**Purpose**: Saves in Megatron-LM core format (`torch_dist` format)
 
-**使用场景**：
-- 将其他格式转换为 Megatron 格式
-- 改变 checkpoint 的并行度配置
+**Use cases**:
+- Convert other formats into Megatron format
+- Change the checkpoint parallelism configuration
 
-**示例**：
+**Example**:
 ```bash
 python convert.py \
     --saver core \
@@ -107,82 +107,82 @@ python convert.py \
     --target-pipeline-parallel-size 1
 ```
 
-### 10. `saver_legacy.py` - Legacy 格式保存器
-**作用**：保存为旧版 Megatron 格式
+### 10. `saver_legacy.py` - Legacy Format Saver
+**Purpose**: Saves the old Megatron format
 
-**使用场景**：
-- 兼容旧版系统
+**Use cases**:
+- Compatibility with older systems
 
-### 11. `saver_hf_llava.py` - HuggingFace LLaVA 保存器
-**作用**：将 LLaVA 模型保存为 HuggingFace 格式
+### 11. `saver_hf_llava.py` - HuggingFace LLaVA Saver
+**Purpose**: Saves LLaVA models in HuggingFace format
 
-**注意**：这是**唯一**的 HF saver，只支持 LLaVA，不支持通用 GPT 模型
+**Note**: This is the **only** HF saver, and it only supports LLaVA, not general GPT models
 
-### 12. `saver_llava.py` - LLaVA 保存器
-**作用**：保存 LLaVA 模型为 Megatron 格式
+### 12. `saver_llava.py` - LLaVA Saver
+**Purpose**: Saves LLaVA models in Megatron format
 
-## Schema 文件（模式定义）
+## Schema Files
 
-### 13. `schema_base.py` - Schema 基类
-**作用**：定义模型参数的组织方式和访问接口
+### 13. `schema_base.py` - Schema Base Class
+**Purpose**: Defines how model parameters are organized and accessed
 
-**功能**：
-- 定义如何从模型中提取参数
-- 定义如何将参数设置到模型中
+**Functions**:
+- Defines how to extract parameters from a model
+- Defines how to set parameters on a model
 
 ### 14. `schema_core.py` - Core Schema
-**作用**：定义 Megatron Core 模型的参数结构
+**Purpose**: Defines the parameter structure for Megatron Core models
 
-**支持的模型类型**：
+**Supported model types**:
 - GPT
 - BERT
-- 支持 MoE（Mixture of Experts）
+- MoE (Mixture of Experts)
 
 ### 15. `schema_hf.py` - HuggingFace Schema
-**作用**：定义 HuggingFace 格式的参数结构
+**Purpose**: Defines the parameter structure for HuggingFace format
 
-**功能**：
-- 提供 Megatron → HF 的层名称映射
-- 目前主要用于 LLaVA
+**Functions**:
+- Provides the Megatron → HF layer-name mapping
+- Currently used mainly for LLaVA
 
-## 工具文件
+## Utility Files
 
-### 16. `checkpoint_inspector.py` - Checkpoint 检查器
-**作用**：检查和验证 checkpoint 的内容
+### 16. `checkpoint_inspector.py` - Checkpoint Inspector
+**Purpose**: Inspects and validates checkpoint contents
 
-**功能**：
-- 查看 checkpoint 的元数据
-- 验证 checkpoint 的完整性
-- 转换 checkpoint 格式（torch_dist ↔ fsdp_dtensor）
+**Functions**:
+- View checkpoint metadata
+- Validate checkpoint integrity
+- Convert checkpoint formats (`torch_dist` ↔ `fsdp_dtensor`)
 
-### 17. `hybrid_conversion.py` - 混合转换
-**作用**：处理混合格式的转换（可能用于特殊场景）
+### 17. `hybrid_conversion.py` - Hybrid Conversion
+**Purpose**: Handles mixed-format conversion, likely for special cases
 
-### 18. `utils.py` - 工具函数
-**作用**：提供转换过程中使用的工具函数
+### 18. `utils.py` - Utility Functions
+**Purpose**: Provides helper functions used during conversion
 
-**主要功能**：
-- `chunk_weight()`: 分割权重用于 tensor parallel
-- `chunk_bias()`: 分割 bias 用于 tensor parallel
-- `_ConverterFakeProcessGroup`: 模拟进程组用于转换
+**Main functions**:
+- `chunk_weight()`: Splits weights for tensor parallelism
+- `chunk_bias()`: Splits bias for tensor parallelism
+- `_ConverterFakeProcessGroup`: Simulates a process group for conversion
 
-## 数据流
+## Data Flow
 
 ```
-源 Checkpoint (HF/Meta/Megatron)
+Source checkpoint (HF/Meta/Megatron)
     ↓
-[Loader 插件]
-    ↓ (通过 Queue)
+[Loader plugin]
+    ↓ (via Queue)
 [convert.py]
-    ↓ (通过 Queue)
-[Saver 插件]
+    ↓ (via Queue)
+[Saver plugin]
     ↓
-目标 Checkpoint (Megatron/HF)
+Target checkpoint (Megatron/HF)
 ```
 
-## 使用示例
+## Usage Examples
 
-### 示例 1: HF → Megatron
+### Example 1: HF → Megatron
 ```bash
 python convert.py \
     --model-type GPT \
@@ -195,7 +195,7 @@ python convert.py \
     --target-tensor-parallel-size 1
 ```
 
-### 示例 2: Megatron → Megatron (改变并行度)
+### Example 2: Megatron → Megatron (change parallelism)
 ```bash
 python convert.py \
     --model-type GPT \
@@ -207,9 +207,9 @@ python convert.py \
     --target-pipeline-parallel-size 1
 ```
 
-### 示例 3: Megatron → PyTorch（需要自定义 saver）
+### Example 3: Megatron → PyTorch (requires a custom saver)
 ```bash
-# 将 megatron_saver_pytorch.py 复制到 tools/checkpoint/ 目录
+# Copy megatron_saver_pytorch.py into tools/checkpoint/
 cp megatron_saver_pytorch.py /path/to/Megatron-LM/tools/checkpoint/
 
 python convert.py \
@@ -221,18 +221,18 @@ python convert.py \
     --target-tensor-parallel-size 1
 ```
 
-## 限制
+## Limitations
 
-1. **没有通用的 HF saver**：只有 `saver_hf_llava.py`，只支持 LLaVA
-2. **没有 PyTorch saver**：需要自己实现（如 `megatron_saver_pytorch.py`）
-3. **转换方向**：主要是 HF/Meta → Megatron，反向转换支持有限
+1. **No generic HF saver**: only `saver_hf_llava.py`, which supports LLaVA only
+2. **No PyTorch saver**: you must implement one yourself, such as `megatron_saver_pytorch.py`
+3. **Conversion direction**: mainly HF/Meta → Megatron; reverse conversion is limited
 
-## 总结
+## Summary
 
-- **convert.py**：核心转换框架
-- **loader_***：各种格式的加载器
-- **saver_***：各种格式的保存器
-- **schema_***：参数结构的定义
-- **工具文件**：辅助功能
+- **convert.py**: core conversion framework
+- **loader_***: loaders for different formats
+- **saver_***: savers for different formats
+- **schema_***: parameter-structure definitions
+- **utility files**: helper functionality
 
-这个插件系统设计得很好，可以轻松扩展新的 loader/saver 来支持更多格式。
+This plugin system is well designed and makes it easy to extend with new loaders/savers for additional formats.

@@ -23,7 +23,7 @@ This directory contains code examples for building a complete production LLM ser
 ├── sglang/                  # SGLang server deployment configurations
 │   ├── llama-3.2-1b.yaml    # SGLang Llama-3.2-1B-Instruct deployment
 │   └── deploy-llama-3.2-1b.sh
-└── *.py                     # Python 代码示例
+└── *.py                     # Python code examples
 ```
 
 ## Complete Setup Guide: From k3d to vLLM Deployment
@@ -637,9 +637,9 @@ kubectl get svc vllm-llama-32-1b
 **Symptoms:**
 ```bash
 kubectl get nodes
-# 节点显示 DiskPressure=True
+# Node shows DiskPressure=True
 kubectl describe pod <pod-name>
-# 显示: 0/1 nodes are available: 1 node(s) had disk-pressure
+# Output: 0/1 nodes are available: 1 node(s) had disk-pressure
 ```
 
 **Cause:**
@@ -696,14 +696,14 @@ kubectl logs vllm-pod
 **Solution:**
 ```yaml
 spec:
-  runtimeClassName: nvidia  # 必须添加
+  runtimeClassName: nvidia  # required
   containers:
   - name: vllm-server
     resources:
       limits:
-        nvidia.com/gpu: 1   # 必须添加
+        nvidia.com/gpu: 1   # required
       requests:
-        nvidia.com/gpu: 1   # 必须添加
+        nvidia.com/gpu: 1   # required
 ```
 
 ### Issue 3: Gated Model Access Denied
@@ -723,12 +723,12 @@ kubectl logs vllm-pod
 
 1. **Create Secret (Do not hardcode token)**
 ```bash
-# 从环境变量创建
+# Create from environment variable
 kubectl create secret generic hf-token-secret \
   --from-literal=token="$HF_TOKEN"
 ```
 
-2. **在 Pod 中引用 Secret**
+2. **Reference the Secret in the Pod**
 ```yaml
 env:
 - name: HF_TOKEN

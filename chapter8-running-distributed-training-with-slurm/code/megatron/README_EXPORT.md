@@ -1,12 +1,12 @@
-# 导出 Megatron Checkpoint 到其他格式
+# Export Megatron Checkpoint to Other Formats
 
-## 概述
+## Overview
 
-Megatron-LM 的 checkpoint 是分布式格式，需要转换为标准格式才能在 SGLang、LLM 或其他框架中使用。
+Megatron-LM checkpoints are distributed formats and must be converted to a standard format before they can be used in SGLang, LLM, or other frameworks.
 
-## 方法 1: 使用 convert_megatron_to_pytorch.py（推荐，最简单）
+## Method 1: Use convert_megatron_to_pytorch.py (Recommended, Easiest)
 
-这个脚本直接加载并导出，最简单直接：
+This script loads and exports directly, which is the simplest approach:
 
 ```bash
 cd /home/wukong/workspace/coderepo/08/code/megatron
@@ -27,14 +27,14 @@ python convert_megatron_to_pytorch.py \
     --kv-channels 128
 ```
 
-## 方法 2: 使用 convert.py + megatron_saver_pytorch.py
+## Method 2: Use convert.py + megatron_saver_pytorch.py
 
-使用 Megatron-LM 自带的 `convert.py` 工具配合自定义的 PyTorch saver：
+Use Megatron-LM's built-in `convert.py` tool together with a custom PyTorch saver:
 
 ```bash
 cd /home/wukong/workspace/coderepo/Megatron-LM/tools/checkpoint
 
-# 确保 megatron_saver_pytorch.py 在 Python path 中
+# Make sure megatron_saver_pytorch.py is on the Python path
 export PYTHONPATH=/home/wukong/workspace/coderepo/08/code/megatron:$PYTHONPATH
 
 python convert.py \
@@ -48,22 +48,22 @@ python convert.py \
     --output-filename model.pt
 ```
 
-**注意**：需要将 `megatron_saver_pytorch.py` 放在 `tools/checkpoint/` 目录下，或者确保它在 Python path 中。
+**Note**: You need to place `megatron_saver_pytorch.py` in `tools/checkpoint/`, or ensure it is on the Python path.
 
-## 方法 3: 使用 convert_megatron_checkpoint.py（支持多种格式）
+## Method 3: Use convert_megatron_checkpoint.py (Supports Multiple Formats)
 
-这个脚本支持导出为 PyTorch 或 HuggingFace 格式：
+This script supports exporting to PyTorch or HuggingFace format:
 
 ```bash
 python convert_megatron_checkpoint.py \
     --checkpoint-dir checkpoints/gpt_8b/iter_0000010 \
     --output-dir exported \
-    --format pytorch  # 或 'huggingface'
+    --format pytorch  # or 'huggingface'
 ```
 
-## 方法 4: 使用 Megatron-Bridge（HuggingFace 格式）
+## Method 4: Use Megatron-Bridge (HuggingFace Format)
 
-如果需要 HuggingFace 格式：
+If you need HuggingFace format:
 
 ```bash
 pip install megatron-bridge
@@ -77,24 +77,24 @@ AutoBridge.export_ckpt(
 "
 ```
 
-## 方法 5: 直接使用分布式 checkpoint
+## Method 5: Use the Distributed Checkpoint Directly
 
-一些框架（如 SGLang）可能支持直接加载 Megatron 的分布式 checkpoint，但需要：
-- 确保框架支持 Megatron 的 checkpoint 格式
-- 可能需要指定 checkpoint 路径和配置
+Some frameworks, such as SGLang, may support loading Megatron's distributed checkpoints directly, but you need to:
+- Ensure the framework supports the Megatron checkpoint format
+- Potentially specify the checkpoint path and configuration
 
-## 文件大小说明
+## File Size Notes
 
-- **完整 checkpoint**（含优化器）：~108 GB（4个文件 × 27 GB）
-- **仅模型权重**（bf16）：~16 GB
-- **PyTorch 格式**（仅权重）：~16 GB
+- **Full checkpoint** (including optimizer): ~108 GB (4 files × 27 GB)
+- **Model weights only** (bf16): ~16 GB
+- **PyTorch format** (weights only): ~16 GB
 
-## 示例：加载导出的 checkpoint
+## Example: Loading the Exported Checkpoint
 
 ```python
 import torch
 
-# 加载导出的 checkpoint
+# Load the exported checkpoint
 checkpoint = torch.load('model.pt')
 state_dict = checkpoint['model_state_dict']
 config = checkpoint['model_config']
@@ -102,12 +102,12 @@ config = checkpoint['model_config']
 print(f"Model config: {config}")
 print(f"State dict keys: {list(state_dict.keys())[:5]}...")
 
-# 使用 state_dict 初始化你的模型
+# Use state_dict to initialize your model
 # model.load_state_dict(state_dict)
 ```
 
-## 注意事项
+## Notes
 
-1. **模型配置**：确保导出时使用的模型配置与训练时一致
-2. **层名称映射**：如果需要 HuggingFace 格式，需要手动转换层名称
-3. **分布式 checkpoint**：原始 checkpoint 是分布式的，导出时会合并所有分片
+1. **Model configuration**: Make sure the model configuration used for export matches the training configuration
+2. **Layer-name mapping**: If you need HuggingFace format, you must manually convert the layer names
+3. **Distributed checkpoint**: The original checkpoint is distributed, and export merges all shards

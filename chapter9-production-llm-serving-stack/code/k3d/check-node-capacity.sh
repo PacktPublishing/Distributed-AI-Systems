@@ -31,16 +31,16 @@ done
 echo ""
 
 # Get current GPU usage
-echo "📈 当前 GPU 使用情况："
+echo "📈 Current GPU usage:"
 kubectl get pods --all-namespaces -o json | jq -r '
 .items[] | 
 select(.spec.containers[].resources.requests."nvidia.com/gpu") |
 "\(.metadata.namespace)/\(.metadata.name): \(.spec.containers[].resources.requests."nvidia.com/gpu") GPU (node: \(.spec.nodeName // "pending"))"
-' 2>/dev/null || echo "  (需要 jq 工具来解析)"
+' 2>/dev/null || echo "  (jq is required to parse this output)"
 echo ""
 
 # Count GPU requests
-echo "🔢 GPU 资源统计："
+echo "🔢 GPU resource summary:"
 TOTAL_GPU_REQUESTS=$(kubectl get pods --all-namespaces -o json 2>/dev/null | \
     jq '[.items[] | .spec.containers[]? | select(.resources.requests."nvidia.com/gpu") | .resources.requests."nvidia.com/gpu" | tonumber] | add' 2>/dev/null || echo "0")
 
@@ -51,8 +51,8 @@ echo ""
 echo "Agent node details:"
 AGENT_NODES=$(kubectl get nodes -o json | jq -r '.items[] | select(.metadata.labels."node-role.kubernetes.io/control-plane" != "true") | .metadata.name' 2>/dev/null)
 AGENT_COUNT=$(echo "$AGENT_NODES" | wc -l)
-echo "  Agent 节点数量: $AGENT_COUNT"
-echo "  Agent 节点列表:"
+echo "  Number of agent nodes: $AGENT_COUNT"
+echo "  Agent node list:"
 echo "$AGENT_NODES" | while read -r node; do
     if [ -n "$node" ]; then
         echo "    - $node"

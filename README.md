@@ -14,7 +14,7 @@ This is the source code for the book *Distributed AI Systems* by Fuheng Wu.
 
 ## Official website
 
-<img src="assets/logo-header.png" alt="distAIsys logo" width="80" /> 
+<img src="https://distaisys.com/static/images/logo-header.png" alt="distAIsys logo" width="100" /> 
 
 [https://distaisys.com](https://distaisys.com)
 

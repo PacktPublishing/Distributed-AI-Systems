@@ -12,9 +12,11 @@ This is the source code for the book *Distributed AI Systems* by Fuheng Wu.
 ![](https://distaisys.com/static/images/book-cover.png)
 
 
-Official website:
+## Official website
 
-[<img src="assets/logo-header.png" alt="distAIsys logo" width="80" /> https://distaisys.com](https://distaisys.com)
+<img src="assets/logo-header.png" alt="distAIsys logo" width="80" /> 
+
+[https://distaisys.com](https://distaisys.com)
 
 Mind maps, study materials, a reader group, problem sets, videos, and seminars to support your learning. Sign up for a free companion account to ask the author questions directly and get DRM-free, high-resolution diagrams.
 

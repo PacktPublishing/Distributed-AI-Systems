@@ -1,4 +1,4 @@
-# Distributed AI Systems
+# Distributed AI Systems 
 
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Website](https://img.shields.io/badge/website-distaisys.com-blue)](https://distaisys.com)
@@ -9,9 +9,14 @@
 
 This is the source code for the book *Distributed AI Systems* by Fuheng Wu.
 
-![](https://m.media-amazon.com/images/I/718Je+tIL3L._SL1500_.jpg)
+![](https://distaisys.com/static/images/book-cover.png)
 
-Official website: [distaisys.com](https://distaisys.com) — mind maps, study materials, a reader group, problem sets, videos, and seminars to support your learning. Sign up for a free companion account to ask the author questions directly and get DRM-free, high-resolution diagrams.
+
+Official website:
+
+[<img src="assets/logo-header.png" alt="distAIsys logo" width="80" /> https://distaisys.com](https://distaisys.com)
+
+Mind maps, study materials, a reader group, problem sets, videos, and seminars to support your learning. Sign up for a free companion account to ask the author questions directly and get DRM-free, high-resolution diagrams.
 
 This repository is actively maintained. If you find a bug, have a question about the code, or run into issues getting an example to run, please open an issue or pull request — updates and fixes will continue to be published here as the book evolves. Found an error in the book itself? Check or report it in the [errata](https://www.packtpub.com/support/errata).
 

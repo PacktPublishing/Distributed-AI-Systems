@@ -5,7 +5,10 @@
 [![Maintained](https://img.shields.io/badge/Maintained%3F-yes-brightgreen.svg)](https://github.com/PacktPublishing/Distributed-AI-Systems)
 [![By Fuheng Wu](https://img.shields.io/badge/By-Fuheng%20Wu-red)](https://distaisys.com)
 [![Published by Packt](https://img.shields.io/badge/Published%20by-Packt-orange)](https://www.packtpub.com)
-[![Amazon](https://img.shields.io/badge/Amazon-4.8%E2%98%85-yellow)](https://www.amazon.com/dp/1807301710/)
+[![Amazon](https://img.shields.io/badge/Amazon-4.8%E2%98%85-gold)](https://www.amazon.com/dp/1807301710/)
+[![#1 Best Seller](https://img.shields.io/badge/%F0%9F%8F%86-%231%20in%20Parallel%20Programming-orange)](https://www.amazon.com/dp/1807301710/)
+[![#1 Hot New Release](https://img.shields.io/badge/%F0%9F%8F%86-%231%20New%20Release%20in%20Memory%20Management-red)](https://www.amazon.com/dp/1807301710/)
+[![Top Seller](https://img.shields.io/badge/%F0%9F%8F%86-%2314%20out%20of%2060K%20in%20AI%20%26%20Machine%20Learning-yellowgreen)](https://www.amazon.com/dp/1807301710/)
 
 This is the source code for the book *Distributed AI Systems* by Fuheng Wu.
 

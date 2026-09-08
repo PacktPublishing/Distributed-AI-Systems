@@ -51,6 +51,9 @@ def get_dataloader(rank, world_size, batch_size=32):
 
 def train_with_profiling(model, dataloader, optimizer, criterion, rank, num_iterations=10):
     """Train with profiling to analyze DDP performance."""
+    # Bind by LOCAL_RANK, not the global rank: on a multi-node job the global rank
+    # exceeds the per-node device count and .cuda(rank) selects the wrong device.
+    local_rank = int(os.environ.get("LOCAL_RANK", rank))
     with profile(
         activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
         record_shapes=True,
@@ -61,8 +64,8 @@ def train_with_profiling(model, dataloader, optimizer, criterion, rank, num_iter
             for i, (data, target) in enumerate(dataloader):
                 if i >= num_iterations:
                     break
-                data = data.cuda(rank, non_blocking=True)
-                target = target.cuda(rank, non_blocking=True)
+                data = data.cuda(local_rank, non_blocking=True)
+                target = target.cuda(local_rank, non_blocking=True)
                 with record_function("forward_pass"):
                     output = model(data)
                     loss = criterion(output, target)

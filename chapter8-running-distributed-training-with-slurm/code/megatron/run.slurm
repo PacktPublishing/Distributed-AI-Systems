@@ -86,8 +86,8 @@ echo ""
 # For virtual nodes (node6, node7, etc.) on same physical node, use localhost
 # This avoids IPv6 resolution warnings
 MASTER_HOSTNAME=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
-if [ "$SLURM_JOB_NUM_NODES" -eq 1 ] || [[ "$MASTER_HOSTNAME" =~ ^node[0-9]+$ ]]; then
-    # Single physical node or virtual nodes - use localhost
+if [ "$SLURM_JOB_NUM_NODES" -eq 1 ]; then
+    # Genuinely single-node: localhost is safe.
     export MASTER_ADDR=127.0.0.1
 else
     # True multi-node setup - resolve hostname to IPv4 address
@@ -265,8 +265,12 @@ MODEL_PARALLEL_ARGS=(
     --tensor-model-parallel-size $TP_SIZE
     --context-parallel-size $CP_SIZE
     --pipeline-model-parallel-size $PP_SIZE
-    --sequence-parallel
 )
+# Megatron's sequence parallelism is an extension of tensor parallelism and is
+# only valid when TP > 1; passing it with TP=1 is rejected/ignored.
+if [ "$TP_SIZE" -gt 1 ]; then
+    MODEL_PARALLEL_ARGS+=(--sequence-parallel)
+fi
 
 # Distributed Data Parallel arguments
 DDP_ARGS=(
@@ -387,8 +391,8 @@ srun --chdir="$SCRIPT_DIR" --label \
         
         # Ensure Megatron-LM is in Python path (for editable install)
         # Add Megatron-LM directory to PYTHONPATH if it exists
-        if [ -d \"/home/wukong/workspace/coderepo/Megatron-LM\" ]; then
-            export PYTHONPATH=\"/home/wukong/workspace/coderepo/Megatron-LM:\$PYTHONPATH\"
+        if [ -n \"\$MEGATRON_LM_PATH\" ] && [ -d \"\$MEGATRON_LM_PATH\" ]; then
+            export PYTHONPATH=\"\$MEGATRON_LM_PATH:\$PYTHONPATH\"
         fi
         
         # Launch training with torchrun

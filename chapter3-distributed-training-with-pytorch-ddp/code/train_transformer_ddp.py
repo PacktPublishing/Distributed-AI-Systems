@@ -14,7 +14,7 @@ import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.distributed import DistributedSampler
-from torch.cuda.amp import autocast, GradScaler
+from torch.amp import autocast, GradScaler
 
 
 class PositionalEncoding(nn.Module):
@@ -118,7 +118,7 @@ def train():
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
     criterion = nn.CrossEntropyLoss()
-    scaler = GradScaler()
+    scaler = GradScaler('cuda')
 
     dataloader, sampler = get_dataloader(rank, world_size, batch_size=32)
 
@@ -130,7 +130,7 @@ def train():
             tgt = src[:, 1:]
             src = src[:, :-1]
             optimizer.zero_grad()
-            with autocast():
+            with autocast('cuda'):
                 output = model(src)
                 output = output.view(-1, output.size(-1))
                 tgt = tgt.reshape(-1)

@@ -35,7 +35,7 @@ conda activate research
 
 # Get the directory where this script is located and create logs directory
 # Use the actual script directory (where sbatch was submitted from)
-SCRIPT_DIR="/home/wukong/workspace/coderepo/08/code"
+SCRIPT_DIR="${SLURM_SUBMIT_DIR:-$(dirname "$(readlink -f "$0")")}"
 cd "$SCRIPT_DIR"
 mkdir -p logs
 
@@ -54,7 +54,15 @@ echo ""
 
 # Get master node address - use localhost for single-node multi-GPU setup
 # For true multi-node, you would use the first node's hostname
-export MASTER_ADDR=127.0.0.1
+# Derive the master address from the SLURM allocation.
+# Do NOT hardcode 127.0.0.1: on a multi-node job each node would then rendezvous
+# with itself, forming N separate one-node process groups. Training appears to run
+# normally but gradients are never synchronised across nodes.
+if [ "${SLURM_JOB_NUM_NODES:-1}" -eq 1 ]; then
+    export MASTER_ADDR=127.0.0.1
+else
+    export MASTER_ADDR=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
+fi
 export MASTER_PORT=29500
 export WORLD_SIZE=$SLURM_NTASKS
 export RANK=$SLURM_PROCID

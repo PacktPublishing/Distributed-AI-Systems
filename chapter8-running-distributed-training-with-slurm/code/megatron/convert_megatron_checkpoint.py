@@ -17,7 +17,7 @@ import torch.distributed as dist
 from pathlib import Path
 
 # Add Megatron-LM to path
-MEGATRON_LM_PATH = "/home/wukong/workspace/coderepo/Megatron-LM"
+MEGATRON_LM_PATH = os.environ.get("MEGATRON_LM_PATH", "")
 if MEGATRON_LM_PATH not in sys.path:
     sys.path.insert(0, MEGATRON_LM_PATH)
 

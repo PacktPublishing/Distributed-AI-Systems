@@ -97,7 +97,7 @@ def main():
     model = DDP(model, device_ids=[local_rank])
     optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
     criterion = nn.MSELoss()
-    train_with_profiling(model, dataloader, optimizer, criterion, local_rank, num_iterations=10)
+    train_with_profiling(model, dataloader, optimizer, criterion, rank, num_iterations=10)
     cleanup()
 
 

@@ -39,3 +39,8 @@ For other chapters, please check the requirements.txt in each chapter folder, an
 ```bash
 pip install -r requirements.txt
 ```
+
+## Useful Links
+
+[Distributed AI Systems: A Practical Guide to GPU Compute and Experimental Environments](https://diary.wu-99.com/20260913.html)
+
